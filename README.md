@@ -2,7 +2,7 @@
 
 **P**hysics-informed **R**adiation **O**perator and **T**ime-series **O**ptimized **N**etwork
 
-[![license](https://img.shields.io/github/license/DChristensen12/PROTON)](https://github.com/DChristensen12/PROTON/blob/main/LICENSE)
+[![python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/downloads/)[![license](https://img.shields.io/github/license/DChristensen12/PROTON)](https://github.com/DChristensen12/PROTON/blob/main/LICENSE)
 
 ## What is the plan for PROTON?
 
@@ -12,6 +12,10 @@ Getting hardware is not strictly neccesary to use PROTON. PROTON can use any dat
 
 ## Hardware I am Using
 
+See [docs/hardware.md](docs/hardware.md) for additional information on the hardware setup!
+
+### Sensors
+
 1.) FNIRSI GC-01 with the M4011 tube type, flashed with Rad Pro firmware.
 2.) GGreg20_V3 with the J305 tube
 3.) Radiacode 102
@@ -19,9 +23,12 @@ Getting hardware is not strictly neccesary to use PROTON. PROTON can use any dat
 
 # Current State/Updates
 
-06/11/2026: 
-Currently waiting for the GGreg20_V3 and Radiacode 102 to be delivered to me!
+06/13/2026: 
+I have all the hardware delivered! I am now documenting how to use it in case anyone wants to copy my hardware setup (not needed to use PROTON). I am going to begin writing the code to get the data from the detectors to the computer (as well as providing a way to test that the software works without any of the hardware).
 
+![FNIRSI GC-01](docs/images/geiger_serial.jpeg)
+![Radiacode 102](docs/images/gamma_spectrometer.jpeg)
+![GGreg20 board with the J305 tube](docs/images/geiger_pulse.jpeg)
 
 
 I will be updating this throughout the year! Stay tuned!
