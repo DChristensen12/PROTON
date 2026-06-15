@@ -12,9 +12,18 @@ This is the integrated picture of the physical set up that PROTON reads from: wh
 | GGreg20_V3, J305 tube | per-pulse source for inter-arrival timing | jumper wires to an ESP32, then USB | `geiger_pulse` |
 | Radiacode 102 | gamma spectrometer | USB-C, or Bluetooth on Linux | `gamma_spectrometer` |
  
-![FNIRSI GC-01](images/geiger_serial.jpeg)
-![Radiacode 102](images/gamma_spectrometer.jpeg)
-![GGreg20 board with the J305 tube](images/geiger_pulse.jpeg)
+<table align="center">
+  <tr>
+    <td align="center"><img src="images/geiger_serial.jpeg" width="200" alt="FNIRSI GC-01"></td>
+    <td align="center"><img src="images/geiger_pulse.jpeg" width="200" alt="GGreg20 with J305 tube"></td>
+    <td align="center"><img src="images/gamma_spectrometer.jpeg" width="200" alt="Radiacode 102"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>FNIRSI GC-01</b><br><code>geiger_serial</code></td>
+    <td align="center"><b>GGreg20 + J305</b><br><code>geiger_pulse</code></td>
+    <td align="center"><b>Radiacode 102</b><br><code>gamma_spectrometer</code></td>
+  </tr>
+</table>
  
 ## How the data reaches the computer
 
