@@ -2,25 +2,25 @@
 
 Work in progress Document.
 
-This is the integrated picture of the physical set up that PROTON reads from: what the detector stack is, how hte pieces connect, and how the data reaches the computer. Each detector's own quick start lives in its respective package README under `proton/Hardware/Detectors/`. This file specifies the wiring, the topology, and the parts list so the details are easy to find in one place.
+This document pertains to the integrated picture of the physical set up that PROTON reads from: what the detector stack is, how the pieces connect, and how the data reaches the computer. Each detector's own quick start lives in its respective package README under `proton/Hardware/Detectors/`. This file specifies the wiring, the topology, and the parts list so the details are easy to find in one place.
 
 ## The detector stack
  
 | detector | role | how it connects | package |
 | --- | --- | --- | --- |
-| FNIRSI GC-01 | polled Geiger counter running Rad Pro | USB-C serial | `geiger_serial` |
-| GGreg20_V3, J305 tube | per-pulse source for inter-arrival timing | jumper wires to an ESP32, then USB | `geiger_pulse` |
+| FNIRSI GC-01 | polled Geiger counter running Rad Pro | USB-C serial | `geiger_counts` |
+| GGreg20_V3, J305 tube | per-pulse source for inter-arrival timing | jumper wires to an ESP32, then USB | `geiger_pulses` |
 | Radiacode 102 | gamma spectrometer | USB-C, or Bluetooth on Linux | `gamma_spectrometer` |
  
 <table align="center">
   <tr>
-    <td align="center"><img src="images/geiger_serial.jpeg" width="200" alt="FNIRSI GC-01"></td>
-    <td align="center"><img src="images/geiger_pulse.jpeg" width="200" alt="GGreg20 with J305 tube"></td>
+    <td align="center"><img src="images/geiger_counts.jpeg" width="200" alt="FNIRSI GC-01"></td>
+    <td align="center"><img src="images/geiger_pulses.jpeg" width="200" alt="GGreg20 with J305 tube"></td>
     <td align="center"><img src="images/gamma_spectrometer.jpeg" width="200" alt="Radiacode 102"></td>
   </tr>
   <tr>
-    <td align="center"><b>FNIRSI GC-01</b><br><code>geiger_serial</code></td>
-    <td align="center"><b>GGreg20 + J305</b><br><code>geiger_pulse</code></td>
+    <td align="center"><b>FNIRSI GC-01</b><br><code>geiger_counts</code></td>
+    <td align="center"><b>GGreg20 + J305</b><br><code>geiger_pulses</code></td>
     <td align="center"><b>Radiacode 102</b><br><code>gamma_spectrometer</code></td>
   </tr>
 </table>
