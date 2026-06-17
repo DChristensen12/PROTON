@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+*.egg-link
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.vscode/
+.idea/
+
+# environments. I use conda, but I'll cover the common venv names too
+.venv/
+venv/
+env/
+
+# logged captures. I will keep the data/raw folder in the repo with a .gitkeep 
+data/raw/*.csv
