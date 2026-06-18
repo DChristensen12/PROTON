@@ -23,12 +23,12 @@ See [docs/hardware.md](docs/hardware.md) for additional information on the hardw
 
 # Current State/Updates
 
-06/13/2026: 
-I have all the hardware delivered! I am now documenting how to use it in case anyone wants to copy my hardware setup (not needed to use PROTON). I am going to begin writing the code to get the data from the detectors to the computer (as well as providing a way to test that the software works without any of the hardware).
+06/17/2026: 
+Currently working on making a way to use PROTON without hardware or with alternative hardware! I am working on the geiger counts device classes right now and I'm working on making a specific class for my hardware, and then a general class that'll work without hardware or with one's own hardware choices.
 
-![FNIRSI GC-01](docs/images/geiger_serial.jpeg)
+![FNIRSI GC-01](docs/images/geiger_counts.jpeg)
 ![Radiacode 102](docs/images/gamma_spectrometer.jpeg)
-![GGreg20 board with the J305 tube](docs/images/geiger_pulse.jpeg)
+![GGreg20 board with the J305 tube](docs/images/geiger_pulses.jpeg)
 
 
 I will be updating this throughout the year! Stay tuned!
