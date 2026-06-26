@@ -13,7 +13,8 @@ I plan to make PROTON an open-source Python library for quantitative inference v
 ## About the Hardware Setup
 
 **Getting your own detectors is not strictly neccesary to use PROTON**.
- I included a detector setup for how I produced my own data, but you can add in data from other sources. PROTON can use any data in the same format, but I will also include sample data to use the software as if you had a geiger counter but not a gamma spectrometer, you'd need gamma spectrometer data to use all aspects of this software. You could also run it with my example data too. You also don't have to use the exact same sensors as me, but I will include my hardware and sensor setup in case you'd like to copy it. 
+PROTON is about using data, not acquiring it. It comes with collected data, so you can run every part of the software without buying a single detector (I included collected data for this scenario).
+My detector setup is included for how I produced my own data, in case you want to reproduce my setup. PROTON can use any data in the same format, so you can also include data from other sources or ones you collected yourself. You could also swap out any number of the detectors for your own, for example if you had a geiger counter but not a gamma spectrometer, you could just use the gamma spectrometer data I included to use all aspects of this software. 
 
 See [docs/hardware.md](docs/hardware.md) for additional information on the hardware setup!
 
