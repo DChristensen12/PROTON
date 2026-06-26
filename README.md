@@ -21,6 +21,7 @@ See [docs/hardware.md](docs/hardware.md) for additional information on the hardw
 # Current State/Updates
 
 06/25/2026: 
-Moving around a lot, so I didn't quite have a lot of time to add new things to PROTON. Right now, I am collecting data for geiger_counts to be used as default data (for the alternative hardware/ no hardware use cases of PROTON) and to ensure everything is working as intended. The current code works how I intended for it to, but I need to test that the data handling of both the RadProDevice class and GeneralCountsDevice class work perfectly as intended. I'll then write some Pytests for it and continue onto one of the other detectors!
+I finished up the geiger_counts data collection feature! I collected an hour of data and will be using it as default_data (to ensure anyone can use all features of proton without having to purchase any detectors, I just think it is a cool feature to be able to use detectors). 
+I'm now going to write some Pytests for it and make some more tweaks to the geiger_counts files (I need to still ensure there is a workaround for all devices if someone wants to use anything different from my setup).
 
 I will be updating this throughout the year! Stay tuned!
