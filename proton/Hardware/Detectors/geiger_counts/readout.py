@@ -153,6 +153,34 @@ class GeneralCountsDevice:
     def __len__(self):
         """How many stored samples is being held in the moment this is called"""
         return len(self._pulse_count)
+    
+    @classmethod
+    def from_readers(cls, read_pulse_count, read_tube_rate, device_id = None):
+        """
+        from_readers builds a live device from your own per field read functions, for the purpose of 
+        pulling samples off hardware as it runs. If you already have data in memory (stored somewhere),
+        then you'd use the replace_ methods instead, and toreplay data from files, just use the default loading path.
+
+        you write one function per field that is yours to read:
+            read_pulse_count: takes no arguments, returns an int, the running cumulative pulse total
+            read_tube_rate: takes no arguments, returns a float, the rate in counts per minute
+        device_id is an optinal string naming your hardware.
+
+        PROTON stam[s wall_time and monotonic itself, and will cast your two reads to those types,
+        so the sample always comes out in the exact shape the redorder and the reply device expect.
+
+        TLDR: If you use alternative hardware, you can use this to ensure it easily works within PROTON
+        """
+        def reader():
+            wall_time = time.time()
+            monotonic = time.monotonic()
+            return RawSample(
+                pulse_count = int(read_pulse_count()),
+                tube_rate = float(read_tube_rate()),
+                wall_time = wall_time,
+                monotonic = monotonic
+            )
+        return cls(reader = reader, device_id = device_id)
 
 
 class RadProDevice:
