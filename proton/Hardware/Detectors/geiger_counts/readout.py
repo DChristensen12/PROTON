@@ -5,6 +5,7 @@ import time
 from typing import NamedTuple
 import serial
 from pathlib import Path
+import proton
 from proton.common import ProtonError
 
 
@@ -28,8 +29,8 @@ class GeneralCountsDevice:
     or give it samples, as the same RawSample type RadProDevice produces. 
     """
 
-    # Uses example data by default.
-    DEFAULT_DATA_DIR = Path(__file__).resolve().parent / "data"
+    # Uses default data by default.
+    DEFAULT_DATA_DIR = Path(proton.__file__).resolve().parent / "default_data" / "geiger_counts"
 
     # The four data columns that would need to be matching the fields on RawSample
     FIELDS = ("pulse_count", "tube_rate", "wall_time", "monotonic")
@@ -159,7 +160,7 @@ class RadProDevice:
     the GET commands, and hands back the device id, the running pulse count, the tube rate,
     and the timestamped raw samples."""
 
-    DEFAULT_PORT = "/dev/ttyACM1" # This is where GC-01 lands on my machine, could also be /dev/ttyACM0
+    DEFAULT_PORT = "/dev/ttyACM0" # This is where GC-01 lands on my machine, could also be /dev/ttyACM0
     BAUD_RATE = 115200 # pyserial asks for one of these, so we use the value from the firmware documents
     SERIAL_TIMEOUT = 2.0 # how long one read waits before I'd call the device silent, in seconds
     DEFAULT_POLL_INTERVAL = 1.0 #how often the logger polls the cumulative pulse count, in seconds
