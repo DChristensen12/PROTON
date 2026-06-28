@@ -27,8 +27,8 @@ class TestRecordSamples:
     def test_returns_the_count_written(self, tmp__path):
         """The count that returns SHOULD match how many samples actually landed"""
         out = tmp__path / "out.csv"
-        written = record_samples(read_one = stops_after([RawSample(1, 1.0, 1.0, 1.0)] * 3))
-        out_path = out, duration = 100, poll_interval = 0, fields = GeneralCountsDevice.FIELDS
+        written = record_samples(read_one = stops_after([RawSample(1, 1.0, 1.0, 1.0)] * 3), out_path = out, duration = 100,
+                                  poll_interval = 0, fields = GeneralCountsDevice.FIELDS)
         assert written == 3
     
 
