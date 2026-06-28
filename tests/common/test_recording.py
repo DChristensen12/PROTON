@@ -20,7 +20,17 @@ class TestRecordSamples:
 
     def test_derives_columns_from_the_sample(self, tmp__path):
         """When no fields given, it should take the column names off the sample itself"""
-        return 2
+        out = tmp__path / "out.csv"
+        record_samples(read_one = stops_after([RawSample(1, 2.0, 3.0, 4.0)]), out_path = out, duration = 100, poll_interval = 0)
+        assert out.read_text().splitlines()[0] == "pulse_count,tube_rate,wall_time,monotonic"
+
+    def test_returns_the_count_written(self, tmp__path):
+        """The count that returns SHOULD match how many samples actually landed"""
+        out = tmp__path / "out.csv"
+        written = record_samples(read_one = stops_after([RawSample(1, 1.0, 1.0, 1.0)] * 3))
+        out_path = out, duration = 100, poll_interval = 0, fields = GeneralCountsDevice.FIELDS
+        assert written == 3
+    
 
 def stops_after(samples):
     """this builds a read functioin that hands back the given samples and then stops 
@@ -33,4 +43,6 @@ def stops_after(samples):
             raise KeyboardInterrupt # Clean stop once the canned samples run out
     return read_one
 
-### NOT FINISHED, Will do this tommorow ### 
+
+
+### NOT FINISHED### 
