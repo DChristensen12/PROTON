@@ -99,7 +99,7 @@ class TestRecordDevice:
     
 
 def stops_after(samples):
-    """this builds a read functioin that hands back the given samples and then stops 
+    """this builds a read function that hands back the given samples and then stops 
     cleanly with a ctrl c"""
     pulled = iter(samples)
     def read_one():
