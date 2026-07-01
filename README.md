@@ -21,8 +21,7 @@ See [docs/hardware.md](docs/hardware.md) for additional information on the hardw
 
 # Current State/Updates
 
-06/25/2026: 
-I finished up the geiger_counts data collection feature! I collected an hour of data and will be using it as default_data (to ensure anyone can use all features of proton without having to purchase any detectors, I just think it is a cool feature to be able to use detectors). 
-I'm now going to write some Pytests for it and make some more tweaks to the geiger_counts files (I need to still ensure there is a workaround for all devices if someone wants to use anything different from my setup).
+06/30/2026:  
+I have been writing tests for geiger_counts, trying to be extra thorough, though I might ease off due to it taking a long time to make all these tests. Everything will still get tested, just not at this depth that I currently am doing. 
 
 I will be updating this throughout the year! Stay tuned!
