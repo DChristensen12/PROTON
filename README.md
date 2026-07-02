@@ -5,9 +5,9 @@
 [![python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/downloads/)[![license](https://img.shields.io/github/license/DChristensen12/PROTON)](https://github.com/DChristensen12/PROTON/blob/main/LICENSE)
 
 
-## What is the plan for PROTON?
+## What is PROTON?
 
-I plan to make PROTON an open-source Python library for quantitative inference via low-cost radiation detectors. What will happen is that it'll take the raw output of consumer instruments, the pulse trains and count rates of Geiger-Muller tubes and the energy spectra of a small scintillation spectrometer, and then turn it into physical quantities that the raw readings do not give us directly. The library will be organized as a set of independent but composable modules.
+This is a library to make sense of your radiation data! Feed it the runs I bundle in or readings you collect yourself, pull real physical quantities out of raw counts and spectra, and turn the whole thing into clean tables and plots you can actually read. 
 
 
 ## About the Hardware Setup
@@ -21,7 +21,9 @@ See [docs/hardware.md](docs/hardware.md) for additional information on the hardw
 
 # Current State/Updates
 
-06/30/2026:  
+07/01/2026:  
 I have been writing tests for geiger_counts, trying to be extra thorough, though I might ease off due to it taking a long time to make all these tests. Everything will still get tested, just not at this depth that I currently am doing. 
+
+I am also reconsidering what PROTON would be useful for, and will reorganize accordingly.= The goal is to make a library that can produce useful insights to those who are interested in nuclear science (namely researchers, hobbyists, and students).
 
 I will be updating this throughout the year! Stay tuned!
