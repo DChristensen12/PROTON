@@ -12,6 +12,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+spectrometer = ["radiacode>=0.3.5"]
 dev = [
     "pytest>=8",]
 test = ["pytest"]

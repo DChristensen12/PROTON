@@ -21,9 +21,9 @@ See [docs/hardware.md](docs/hardware.md) for additional information on the hardw
 
 # Current State/Updates
 
-07/01/2026:  
-I have been writing tests for geiger_counts, trying to be extra thorough, though I might ease off due to it taking a long time to make all these tests. Everything will still get tested, just not at this depth that I currently am doing. 
+07/03/2026:  
 
-I am also reconsidering what PROTON would be useful for, and will reorganize accordingly.= The goal is to make a library that can produce useful insights to those who are interested in nuclear science (namely researchers, hobbyists, and students).
+I am focusing PROTON on the Geiger counters aspect of the project, especially since they are cheaper and accessible in general. 
+I will still include early gamma spectrometer support, but specfically using it for future features are planned to be built out later on :)
 
 I will be updating this throughout the year! Stay tuned!
