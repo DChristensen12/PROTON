@@ -7,7 +7,7 @@
 
 ## What is PROTON?
 
-This is a library to make sense of your radiation data! Feed it the runs I bundle in or readings you collect yourself, pull real physical quantities out of raw counts and spectra, and turn the whole thing into clean tables and plots you can actually read. 
+This is a library for radiation data inference and visualization! Feed it the runs I bundle in or readings you collect yourself, pull real physical quantities out of raw counts and spectra, and turn the whole thing into organized tables and plots you can actually read. 
 
 
 ## About the Hardware Setup
@@ -21,9 +21,10 @@ See [docs/hardware.md](docs/hardware.md) for additional information on the hardw
 
 # Current State/Updates
 
-07/03/2026:  
+07/07/2026:  
 
-I am focusing PROTON on the Geiger counters aspect of the project, especially since they are cheaper and accessible in general. 
+PROTON will first be about using the geiger counters for radiation inference and visualizations, using a variety of techniques. Geiger counters are cheaper and more accessible in general, so that is my main reason for this small pivot.
+
 I will still include early gamma spectrometer support, but specfically using it for future features are planned to be built out later on :)
 
 I will be updating this throughout the year! Stay tuned!
