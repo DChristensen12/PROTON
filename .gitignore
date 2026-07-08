@@ -10,7 +10,7 @@ dist/
 .ruff_cache/
 .vscode/
 .idea/
-!.github/workflows
+
 # environments. I use conda, but I'll cover the common venv names too
 .venv/
 venv/
