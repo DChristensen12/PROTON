@@ -12,6 +12,8 @@ This document pertains to the integrated picture of the physical set up that PRO
 | GGreg20_V3, J305 tube | per-pulse source for inter-arrival timing | jumper wires to an ESP32, then USB | `geiger_pulses` |
 | Radiacode 102 | gamma spectrometer | USB-C, or Bluetooth on Linux | `gamma_spectrometer` |
  
+</br>
+
 <table align="center">
   <tr>
     <td align="center"><img src="images/geiger_counts.jpeg" width="200" alt="FNIRSI GC-01"></td>
@@ -24,6 +26,8 @@ This document pertains to the integrated picture of the physical set up that PRO
     <td align="center"><b>Radiacode 102</b><br><code>gamma_spectrometer</code></td>
   </tr>
 </table>
+
+</br>
  
 ## How the data reaches the computer
 
