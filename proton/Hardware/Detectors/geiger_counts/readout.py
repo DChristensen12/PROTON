@@ -35,15 +35,19 @@ class GeneralCountsDevice:
     # The four data columns that would need to be matching the fields on RawSample
     FIELDS = ("pulse_count", "tube_rate", "wall_time", "monotonic")
 
-    __slots__ = ("_pulse_count", "_tube_rate", "_wall_time", "_monotonic", "_cursor") 
+    __slots__ = ("_pulse_count", "_tube_rate", "_wall_time", "_monotonic", "_cursor", "_reader", "_device_id")
 
-    def __init__(self, data_dir = None):
+    def __init__(self, data_dir = None, reader = None, device_id = None):
         """Starts empty, then loads in whatever count data lives in data_dir
-        
+
         Note: If data_dir is left out, this will automatically fall back to the
-        example data bundled with the package. If that folder is missing or empty, 
-        it'll stay empty rather than crash, so building the device is always safe to do. 
-        You'd be able to fill it later by loading a dataset or by replacing fields one at a time.        
+        example data bundled with the package. If that folder is missing or empty,
+        it'll stay empty rather than crash, so building the device is always safe to do.
+        You'd be able to fill it later by loading a dataset or by replacing fields one at a time.
+
+        If reader is given instead, this becomes a live device: read_raw_sample calls
+        reader() for each sample rather than replaying stored data. device_id then names
+        that hardware for get_device_id. This is how from_readers builds a live device.
         """
 
         self._pulse_count = []
@@ -51,8 +55,11 @@ class GeneralCountsDevice:
         self._wall_time = []
         self._monotonic = []
         self._cursor = 0 # The stored row read_raw_sample hands back next
-        data_dir = data_dir if data_dir is not None else self.DEFAULT_DATA_DIR
-        self.load(data_dir)
+        self._reader = reader
+        self._device_id = device_id
+        if reader is None:
+            data_dir = data_dir if data_dir is not None else self.DEFAULT_DATA_DIR
+            self.load(data_dir)
 
     def load(self, data_dir):
         """
@@ -96,6 +103,8 @@ class GeneralCountsDevice:
 
     def read_raw_sample(self):
         """Hands back the next stored sample as RawSample, then steps the cursor"""
+        if self._reader is not None:
+            return self._reader()
         if self._cursor >= len(self._pulse_count):
             if len(self._pulse_count) == 0:
                 raise ValueError("no count data loaded to replay")
@@ -117,6 +126,10 @@ class GeneralCountsDevice:
 
     def get_device_id(self):
         """A stand in id, so the code that records which device it used still gets ananswer."""
+        if self._device_id is not None:
+            return self._device_id
+        if self._reader is not None:
+            return "GeneralCountsDevice live"
         return "GeneralCountsDevice replay (" + str(len(self)) + " samples)"
 
     def replace_pulse_count(self, values):
