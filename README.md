@@ -21,10 +21,8 @@ See [docs/hardware.md](docs/hardware.md) for additional information on the hardw
 
 # Current State/Updates
 
-07/07/2026:  
+07/09/2026:  
 
-PROTON will first be about using the geiger counters for radiation inference and visualizations, using a variety of techniques. Geiger counters are cheaper and more accessible in general, so that is my main reason for this small pivot.
-
-I will still include early gamma spectrometer support, but specfically using it for future features are planned to be built out later on :)
+While setting up my detector for geiger_pulses, I started having to add more hardware code than I initially intended. Since I want PROTON to be about using data for inference and visualization, I am going to make a branch, fix complete hardware code entirely, then edit how the classes work to ensure that PROTON can easily be used without any hardware (just a supported feature for actual research purposes). I will ensure the General Device classes work without hardware and work exactly like hardware (I'll call it parity tests for my testing of it), and that everything relating to actual hardware is optional and not directly bundled in with the main purposes of PROTON. Since this'll be a big change (likely making data.handler a huge file and changing some parts of the detector classes), I'm putting this one on a branch, separate from main. I'll merge with main when I'm confident the hardware section fits into PROTON exactly how I want it to. 
 
 I will be updating this throughout the year! Stay tuned!
