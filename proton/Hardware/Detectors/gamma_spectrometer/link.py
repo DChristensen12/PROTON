@@ -1,13 +1,16 @@
 """This is everything for linking to a radiacode scintillation detector and pulling its spectra in.
 As well as a GeneralSpectrumsDevice method for some scenario where you want to use a different gamma spectrometer (or spectrum device)"""
 
-from radiacode import RadiaCode
 import time
 from typing import NamedTuple
 import csv
 from pathlib import Path
 import proton
+from proton.common import ProtonError
 
+
+class SpectrumError(ProtonError):
+    """Raised when a spectrum source cannot be loaded, read, or parsed"""
 
 
 class RawSpectrum(NamedTuple):
@@ -32,6 +35,7 @@ class GeneralSpectrumDevice:
 
     DEFAULT_DATA_DIR = Path(proton.__file__).resolve().parent / "default_data" / "gamma_spectrometer"  # the reference spectra shipped in the package, the same folder record_spectrum writes to
     HEADER_FIELDS = ("a0", "a1", "a2", "duration", "wall_time", "monotonic")  # header keys a spectrum file in our own format carries, the calibration and timing fields of RawSpectrum
+    DEFAULT_POLL_INTERVAL = 30.0  # I copied this from record_spectrum.py's SAVE_INTERVAL, the cadence I already re-read a spectrum at
     __slots__ = ("_counts", "_a0", "_a1", "_a2", "_duration", "_wall_time", "_monotonic", "_cursor", "_reader")
 
     def __init__(self, data_dir = None, reader = None, spectra = None):
@@ -52,16 +56,32 @@ class GeneralSpectrumDevice:
             return
         self.load(self.DEFAULT_DATA_DIR if data_dir is None else data_dir) # no reader or handed spectra means we use the data files
 
+    def __enter__(self):
+        """Lets you use the device in a with block"""
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Nothing to release, but I keep the shape of RadiaCodeDevice"""
+        return False
+
     def load(self, data_dir, parser = None, pattern = "*.csv"):
         """Reads every matching file in data_dir in sorted name order, one file per spectrum. Pass your
         own parser to read a format other than ours, and pattern to match its extension. Called again it
-        swaps the dataset instead of stacking, and a missing folder is a no op.
+        swaps the dataset instead of stacking. I treat a missing folder as a no op, since that's the
+        default data path before I've ever recorded anything, but a path that exists and is neither a
+        directory nor a file I can read is an error, not a silent empty load.
         """
-        folder = Path(data_dir)
-        if not folder.is_dir():
+        path = Path(data_dir)
+        if not path.exists():
             return
         read = parser if parser is not None else self._read_file  # drop in your own parser for another format
-        spectra = [read(path) for path in sorted(folder.glob(pattern))]
+        if path.is_dir():
+            files = sorted(path.glob(pattern))
+        elif path.is_file():
+            files = [path]  # one file, one spectrum, same as if I'd pointed load() at a folder holding just this one
+        else:
+            raise SpectrumError(str(path) + " is neither a file nor a directory")
+        spectra = [read(p) for p in files]
         self._load_spectra(spectra)
 
     def _load_spectra(self, spectra):
@@ -103,9 +123,9 @@ class GeneralSpectrumDevice:
                     counts.append(int(row.split(",")[1]))  # just the count, rows are already in channel order
         for key in self.HEADER_FIELDS:
             if key not in header:
-                raise ValueError("spectrum file " + str(path) + " is missing the " + key + " header")
+                raise SpectrumError("spectrum file " + str(path) + " is missing the " + key + " header")
         if not seen_table:
-            raise ValueError("spectrum file " + str(path) + " has no channel,counts table")
+            raise SpectrumError("spectrum file " + str(path) + " has no channel,counts table")
         return RawSpectrum(
             counts = tuple(counts),
             a0 = float(header["a0"]),
@@ -121,9 +141,9 @@ class GeneralSpectrumDevice:
         if self._reader is not None:
             return self._reader()  # live mode, so the cursor never moves
         if len(self) == 0:
-            raise RuntimeError("no spectrum data loaded")
+            raise SpectrumError("no spectrum data loaded")
         if self._cursor >= len(self):
-            raise RuntimeError("replay is done, every loaded spectrum has been read")
+            raise SpectrumError("replay is done, every loaded spectrum has been read")
         i = self._cursor
         self._cursor += 1
         return RawSpectrum(
@@ -141,19 +161,27 @@ class GeneralSpectrumDevice:
         self._cursor = 0
 
     def get_device_id(self):
-        """Names itself as a replay stand in with how many spectra it holds"""
+        """Names itself as a live source or a replay stand in with how many spectra it holds"""
+        if self._reader is not None:
+            return "general spectrum live"
         return "general spectrum replay, " + str(len(self)) + " spectra"
 
     def __len__(self):
-        """How many spectra are loaded"""
+        """How many spectra are loaded
+
+        A live reader gives me no stored spectra to count, so I raise here rather than answer
+        0, which would look like an empty replay instead of a stream.
+        """
+        if self._reader is not None:
+            raise SpectrumError("this source streams, so its length is not known")
         return len(self._counts)
 
     def _check_replace(self, column):
         """Guards a replace, the data has to be loaded and the new column has to match its length"""
         if len(self) == 0:
-            raise ValueError("load spectra before replacing a column")
+            raise SpectrumError("load spectra before replacing a column")
         if len(column) != len(self):
-            raise ValueError("replacement has " + str(len(column)) + " values but there are " + str(len(self)) + " spectra")
+            raise SpectrumError("replacement has " + str(len(column)) + " values but there are " + str(len(self)) + " spectra")
 
     def replace_counts(self, counts):
         """Swaps the count histograms, each cast to a tuple of ints"""
@@ -230,6 +258,7 @@ class RadiaCodeDevice:
     hands back the device id and the timestamped raw spectra."""
 
     DEFAULT_MODEL = "102" # what i personally have, change it if you are on a 103 or 110
+    DEFAULT_POLL_INTERVAL = 30.0 # I copied this from record_spectrum.py's SAVE_INTERVAL, the cadence I already re-read a spectrum at
 
     __slots__ = ("_model", "_rc")
 
@@ -244,6 +273,7 @@ class RadiaCodeDevice:
         if device is not None:
             self._rc = device # uses the object handed to it
         else:
+            from radiacode import RadiaCode  # we only need this installed for the real device path
             self._rc = RadiaCode(bluetooth_mac = bluetooth_mac, serial_number = serial_number, ignore_firmware_compatibility_check = ignore_firmware_check)
 
     def __enter__(self):

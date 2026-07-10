@@ -3,7 +3,6 @@
 import csv
 import time
 from typing import NamedTuple
-import serial
 from pathlib import Path
 import proton
 from proton.common import ProtonError
@@ -35,9 +34,11 @@ class GeneralCountsDevice:
     # The four data columns that would need to be matching the fields on RawSample
     FIELDS = ("pulse_count", "tube_rate", "wall_time", "monotonic")
 
+    DEFAULT_POLL_INTERVAL = 1.0  # I copied this from RadProDevice, so record_device needs no override to run this class
+
     __slots__ = ("_pulse_count", "_tube_rate", "_wall_time", "_monotonic", "_cursor", "_reader", "_device_id")
 
-    def __init__(self, data_dir = None, reader = None, device_id = None):
+    def __init__(self, data_dir = None, reader = None, device_id = None, samples = None):
         """Starts empty, then loads in whatever count data lives in data_dir
 
         Note: If data_dir is left out, this will automatically fall back to the
@@ -48,6 +49,9 @@ class GeneralCountsDevice:
         If reader is given instead, this becomes a live device: read_raw_sample calls
         reader() for each sample rather than replaying stored data. device_id then names
         that hardware for get_device_id. This is how from_readers builds a live device.
+
+        samples takes a list of RawSample built elsewhere, straight into memory with no file
+        involved. This is how from_samples builds a device.
         """
 
         self._pulse_count = []
@@ -57,9 +61,21 @@ class GeneralCountsDevice:
         self._cursor = 0 # The stored row read_raw_sample hands back next
         self._reader = reader
         self._device_id = device_id
-        if reader is None:
-            data_dir = data_dir if data_dir is not None else self.DEFAULT_DATA_DIR
-            self.load(data_dir)
+        if reader is not None:
+            return
+        if samples is not None:
+            self._load_samples(samples)
+            return
+        data_dir = data_dir if data_dir is not None else self.DEFAULT_DATA_DIR
+        self.load(data_dir)
+
+    def __enter__(self):
+        """Lets you use the device in a with block"""
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Nothing to release, but I keep the shape of RadProDevice"""
+        return False
 
     def load(self, data_dir):
         """
@@ -81,6 +97,22 @@ class GeneralCountsDevice:
 
         for path in sorted(data_dir.glob("*.csv")):
             self._read_file(path)
+
+    def _load_samples(self, samples):
+        """Fills the replay columns from an iterable of RawSample and rewinds. This is the in
+        memory counterpart to load(), so a device built from already read samples replays them
+        exactly like one built from a csv."""
+        pulse_count, tube_rate, wall_time, monotonic = [], [], [], []
+        for s in samples:
+            pulse_count.append(int(s.pulse_count))
+            tube_rate.append(float(s.tube_rate))
+            wall_time.append(float(s.wall_time))
+            monotonic.append(float(s.monotonic))
+        self._pulse_count = pulse_count
+        self._tube_rate = tube_rate
+        self._wall_time = wall_time
+        self._monotonic = monotonic
+        self._cursor = 0
 
     def _read_file(self, path):
         """
@@ -164,9 +196,24 @@ class GeneralCountsDevice:
         return values
 
     def __len__(self):
-        """How many stored samples is being held in the moment this is called"""
+        """How many stored samples is being held in the moment this is called
+
+        A live reader gives me no stored rows to count, so I raise here rather than
+        answer 0, which would look like an empty replay instead of a stream.
+        """
+        if self._reader is not None:
+            raise ValueError("this source streams, so its length is not known")
         return len(self._pulse_count)
-    
+
+    @classmethod
+    def from_samples(cls, samples, device_id = None):
+        """Builds a device straight from RawSample objects you built yourself, whatever device
+        they came from. Parse your own file however you like into RawSample, hand me the list,
+        and it replays like any other. This is the in memory door, for when you already have the
+        data and do not want to round trip it through a csv first.
+        """
+        return cls(samples = list(samples), device_id = device_id)
+
     @classmethod
     def from_readers(cls, read_pulse_count, read_tube_rate, device_id = None):
         """
@@ -222,6 +269,7 @@ class RadProDevice:
         if serial_port is not None:
             self._serial = serial_port # Use object handed to it
         else:
+            import serial  # I only need this installed for the real device path
             self._serial = serial.Serial(port, baudrate = baud, timeout = timeout)
 
     def __enter__(self):
@@ -303,6 +351,7 @@ def show_raw_replies(port = None, commands = None): # Function for devices with 
     shape of its replies. This helps when something isn't parsing the way you'd expect.
     It opens its own connection, so you do not need to build a RadProDevice first.
     """
+    import serial  # I only need this for talking to real RadPro hardware
     port = port if port is not None else RadProDevice.DEFAULT_PORT
     # we default to the three commands the rest of the pipeline leans on
     if commands is None:
