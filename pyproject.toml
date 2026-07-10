@@ -7,11 +7,10 @@ name = "proton"
 version = "0.0.1"
 description = "Physics-informed Radiation Operator and Time-series Optimized Network"
 requires-python = ">=3.12"
-dependencies = [
-    "pyserial>=3.5",
-]
+dependencies = []
 
 [project.optional-dependencies]
+serial = ["pyserial>=3.5"]
 spectrometer = ["radiacode>=0.3.5"]
 dev = [
     "pytest>=8",]

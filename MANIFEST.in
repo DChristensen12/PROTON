@@ -1,0 +1,5 @@
+recursive-include proton/Hardware *.ino
+
+include HARDWARE.md
+include FOUNDATIONS.md
+include CONTRIBUTING.md

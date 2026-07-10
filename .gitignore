@@ -10,11 +10,10 @@ dist/
 .ruff_cache/
 .vscode/
 .idea/
+compile_commands.json
+data/ # Default_data already bundled. This is data that only exists on one's own computer.
 
 # environments. I use conda, but I'll cover the common venv names too
 .venv/
 venv/
 env/
-
-# logged captures. I will keep the data/raw folder in the repo with a .gitkeep 
-data/raw/*.csv

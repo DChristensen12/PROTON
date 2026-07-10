@@ -70,11 +70,54 @@ def record_samples(read_one, out_path, duration, poll_interval, fields = None):
         print("wrote", written, "samples to", out_path)
         return written
 
-def record_device(device_cls, out_path, fields = None, duration = 3600, port = None, poll_interval = None):
-    """opens device_cls, records a run to out_path, and falls back to the device's own defaults."""
+def record_snapshot(read_one, out_path, duration, poll_interval, write):
+    """
+    Polls read_one once per interval for up to duration seconds, and writes each snapshot out
+    to out_path with write(sample, out_path). Every write replaces the last one, so out_path
+    always holds the latest full read rather than a growing history of them.
+
+    I wrote this for a sample that does not fit one csv row, a spectrum's whole histogram for
+    instance, where record_samples would have to flatten or serialize it into a single cell.
+    write owns the file format entirely (your own format, headers and all), so this function
+    only owns the polling and the honest partial run handling, the same job record_samples
+    does for row based samples.
+    """
+    written = 0
+    start = time.monotonic()
+    next_poll = start
+    try:
+        while time.monotonic() - start < duration:
+            sample = read_one()
+            write(sample, out_path)
+            written += 1
+            next_poll += poll_interval
+            now = time.monotonic()
+            if now < next_poll:
+                time.sleep(next_poll - now) # still time left, so sleep the remainder to hold the cadence
+            else:
+                next_poll = now # a read ran long and we fell behind, so resync instead of trying to catch up later
+    except KeyboardInterrupt:
+        # when stopped on purpose, the last snapshot written is already on disk
+        print("Stopped early 0-0")
+
+    except (OSError, ProtonError) as problem:
+        # the device dropped out or stopped answering partway through, the last snapshot is still safe
+        print("The device stopped partway through, keeping the last saved snapshot:", problem)
+
+    print("wrote", written, "snapshots to", out_path)
+    return written
+
+def record_device(device_cls, out_path, fields = None, duration = 3600, poll_interval = None, **device_kwargs):
+    """opens device_cls, records a run to out_path, and falls back to the device's own defaults.
+
+    device_kwargs forwards straight to device_cls's constructor. I made it a catch all kwarg
+    instead of a fixed port argument, so this works for a device that opens a port, one that
+    opens no hardware at all, and anything in between. Pass port = ... for a serial device the
+    same as before, or nothing for a general device that needs no arguments.
+    """
     if poll_interval is None:
-        poll_interval = device_cls.DEFAULT_POLL_INTERVAL # The port stays None when unset, so the device fills in its own DEFAULT_PORT
-    with device_cls(port = port) as device:
+        poll_interval = device_cls.DEFAULT_POLL_INTERVAL
+    with device_cls(**device_kwargs) as device:
         print("recording from", device.get_device_id())
         return record_samples(
             read_one = device.read_raw_sample,
