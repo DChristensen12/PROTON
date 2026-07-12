@@ -21,8 +21,8 @@ See [docs/hardware.md](docs/hardware.md) for additional information on the hardw
 
 # Current State/Updates
 
-07/09/2026:  
+07/12/2026:  
 
-While setting up my detector for geiger_pulses, I started having to add more hardware code than I initially intended. Since I want PROTON to be about using data for inference and visualization, I am going to make a branch, fix complete hardware code entirely, then edit how the classes work to ensure that PROTON can easily be used without any hardware (just a supported feature for actual research purposes). I will ensure the General Device classes work without hardware and work exactly like hardware (I'll call it parity tests for my testing of it), and that everything relating to actual hardware is optional and not directly bundled in with the main purposes of PROTON. Since this'll be a big change (likely making data.handler a huge file and changing some parts of the detector classes), I'm putting this one on a branch, separate from main. I'll merge with main when I'm confident the hardware section fits into PROTON exactly how I want it to. 
+I am going to refactor the hardware section with my `data_handler.py`. The thing that was bothering me was that the data handling seemed very inefficient. It also made it complicated to do the no hardware option, so I'm formulating all the data handling in `data_handler.py`, then refactoring the hardware support around it. Hardware is a supported feature for research and citizen science, not the main purpose of PROTON itself, so I'll fix it up as such. I'll merge the branch after the data handling is fixed and the hardware code is refactored and validated. I'll make the first release whenever I have the hardware support, first feature (PINNs, FNOs, etc) implemented, and the first visualizations and color themes are correctly implemented. As always, the updates will be public and visible in the commits and here in the current State/Updates! 
 
 I will be updating this throughout the year! Stay tuned!
