@@ -201,6 +201,28 @@ class PulseTrain(RadiationData):
                 times.append(float(row[column]))
         return cls(times, **kwargs)
 
+    @classmethod
+    def from_recorded(cls, path, **kwargs):
+        """Reads a csv the pulse recorder wrote, the dt_us column of microsecond gaps.
+        Arrival times come from summing the gaps, since the device's own interval timer
+        is the measurement and the host clocks only say when a line arrived. t0 comes
+        off the first wall_time when that column is present and the caller passed none.
+        This is the recorder door, from_csv above stays the generic one for a file that
+        already carries absolute times."""
+        path = Path(path)
+        dts, wall = [], []
+        with path.open(newline = "") as f:
+            for row in csv.DictReader(f):
+                if "dt_us" not in row:
+                    raise ProtonError("no dt_us column in " + str(path))
+                dts.append(int(row["dt_us"]))
+                if "wall_time" in row:
+                    wall.append(float(row["wall_time"]))
+        if "t0" not in kwargs or kwargs["t0"] is None:
+            kwargs["t0"] = wall[0] if wall else None
+        times = np.cumsum(np.asarray(dts, dtype = np.float64)) / 1e6
+        return cls(times, **kwargs)
+
     def _times(self):
         """The arrival times themselves."""
         return self.times

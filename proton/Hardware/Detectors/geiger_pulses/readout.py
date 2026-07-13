@@ -1,4 +1,5 @@
-"""readout.py holds the pulse sources for geiger_pulses.
+"""
+readout.py holds the pulse sources for geiger_pulses.
  
 A counter hands back a rate whenever I ask for one. This device only speaks when a particle shows up,
 so a read waits on the next pulse instead of sampling on a clock. That is why the recorder runs with a
@@ -13,21 +14,46 @@ series I generated, or a reader I wrote for some other board.
 import time
 from pathlib import Path
 from typing import NamedTuple
-
 from proton.common.exceptions import ProtonError
-
-
-class PulseError(ProtonError):
-    """Raised when a pulse source cannot be opened, read, or parsed"""
+from proton.common.data_handler import PulseTrain
 
 
 class RawPulse(NamedTuple):
     """One detected pulse and the gap in microseconds since the pulse before it"""
-
     pulse_index: int
     dt_us: int
     wall_time: float
     monotonic: float
+
+class PulseError(ProtonError):
+    """Raised when a pulse source cannot be opened, read, or parsed
+
+        Carries optional context about the pulse source that failed, so a handler or a
+    traceback can see what was happening without re-deriving it. All fields default
+    to None, so the plain PulseError("message") form still works at every existing
+    raise site.
+    """
+
+    def __init__(self, message, source = None, raw = None, path = None):
+        """
+        The __init__ here keeps the failure context on the error. This is so that the source names the device or replay
+        (the esp32 port or a device_id), and raw is the offending serial line when a read would not parse, path is the csv when the failure was a load.
+        """
+        super().__init__(message)
+        self.source = source   # esp32:<port> or the general device's device_id
+        self.raw = raw         # the exact line that would not parse, when there was one
+        self.path = path       # the csv involved, when the failure was a load
+
+    def __str__(self):
+        """Messages first, then whatever context is set, so on its own, the traceback can be read"""
+        parts = [self.message]
+        if self.source is not None:
+            parts.append("source=" + str(self.source))
+        if self.path is not None:
+            parts.append("path=" + str(self.path))
+        if self.raw is not None:
+            parts.append("raw=" + repr(self.raw))
+        return " | ".join(parts)
 
 
 class EspPulseDevice:
@@ -38,7 +64,7 @@ class EspPulseDevice:
     DEFAULT_BAUD = 115200
 
     def __init__(self, port = None, baud = None, timeout = 1.0, serial_port = None):
-        """Open the serial link, or take an already open one so tests can inject a fake.
+        """Opens the serial link, or takes an already open one so tests can inject a fake one.
 
         pyserial asserts DTR and RTS the moment a port opens. On this DevKit those lines are
         wired to EN and GPIO0, so a plain open reboots the chip and dumps ROM bootloader garbage
@@ -52,7 +78,7 @@ class EspPulseDevice:
         if serial_port is not None:
             self._serial = serial_port
             return
-        import serial  # I only need this installed for the real device path
+        import serial  # we would only need this installed for a real device path
         self._serial = serial.Serial()
         self._serial.port = self.port
         self._serial.baudrate = self.baud
@@ -63,7 +89,7 @@ class EspPulseDevice:
             self._serial.open()
         except serial.SerialException as err:
             raise PulseError("could not open " + str(self.port)) from err
-        time.sleep(0.1)   # lets the line settle before I clear it
+        time.sleep(0.1)   # lets the line settle before WE clear it
         self._serial.reset_input_buffer()   # discards anything that arrived before the first real read
 
     def get_device_id(self):
@@ -217,6 +243,17 @@ class GeneralPulsesDevice:
                     continue
                 values.append(int(line.split(",")[column]))
         return values
+
+    def to_train(self, **kwargs):
+        """Hands the held intervals over as a PulseTrain, the door from this device into the
+        analysis side. It converts the microsecond gaps to seconds and hands over the whole
+        stored series regardless of how far a replay has read. There is no wall clock behind
+        stored intervals, so t0 stays None unless the caller passes one."""
+        if self._intervals is None:
+            raise PulseError("this source streams, record it to a csv first and load that")
+        if "detector_id" not in kwargs:
+            kwargs["detector_id"] = self._device_id
+        return PulseTrain.from_intervals([dt / 1_000_000 for dt in self._intervals], **kwargs)
 
     def close(self):
         """Here so this device closes like the serial one"""
