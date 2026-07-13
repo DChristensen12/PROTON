@@ -17,7 +17,7 @@ class SpectrumError(ProtonError):
     """Raised when a spectrum source cannot be loaded, read, or parsed"""
 
 
-SPECTRUM_HEADER_FIELDS = ("a0", "a1", "a2", "duration", "wall_time", "monotonic")  # header keys a spectrum file in our own format carries
+SPECTRUM_HEADER_FIELDS = ("a0", "a1", "a2", "duration", "wall_time", "monotonic")  # header keys a spectrum file in our own format has
 
 
 def read_spectrum_file(path):
@@ -59,8 +59,9 @@ def read_spectrum_file(path):
 
 
 def write_spectrum_file(spectrum, out_path, device_id):
-    """Writes one spectrum out to out_path, a small header of metadata first, then the channel
-    and counts table. Lives next to read_spectrum_file so the format is owned in one place and
+    """
+    Writes one spectrum out to out_path, a small header of metadata first, then the channel
+    and counts table. It is next to read_spectrum_file so the format is in one place and
     drift between the two breaks a test instead of a user.
     """
     out_path = Path(out_path)
@@ -78,14 +79,15 @@ def write_spectrum_file(spectrum, out_path, device_id):
         writer.writerow(("channel", "counts"))
         for channel, count in enumerate(spectrum.counts):
             writer.writerow((channel, count))
-    tmp.replace(out_path) # swap the finished file in once it is all the way written
+    tmp.replace(out_path) # swaps the finished file in once it is all the way written
 
 
 def _as_times(values):
-    """Turns the input into a validated float64 relative time array. Times must be
-    finite and non decreasing, and I raise instead of silently sorting because out
+    """
+    Turns the input into a validated float64 relative time array. Times must be
+    finite and non decreasing, and we shall raise instead of silently sorting because out
     of order timestamps usually mean a clock bug upstream, and hiding that would
-    poison the interval statistics.
+    poison our interval statistics :(((
     """
     times = np.asarray(values, dtype = np.float64)
     if times.ndim != 1:
@@ -99,15 +101,14 @@ def _as_times(values):
 
 def _poisson_sigma(counts):
     """Poisson uncertainty on raw counts, sqrt(N) with a floor of one count. The
-    floor for empty bins follows becquerel's convention, a zero count bin claiming
-    zero uncertainty would be wrong.
+    floor for empty bins follows becquerel's convention.
     """
     return np.maximum(np.sqrt(counts), 1.0)
 
 
 class RadiationData:
-    """The base every measurement container inherits from. It defines the contract,
-    not the storage, each subclass keeps whatever numpy shape is natural and just
+    """The base every measurement container inherits from.  
+    Each subclass keeps whatever numpy shape is natural and just
     provides the _times() hook. More gets added here only when something needs it.
     """
 
@@ -127,7 +128,7 @@ class RadiationData:
         raise ProtonError(type(self).__name__ + " does not provide times")
 
     def __len__(self):
-        """Number of samples held. Honest because these containers are static."""
+        """Number of samples held. These containers are static."""
         return self._times().size
 
     def time_span(self):
@@ -168,7 +169,7 @@ def _pandas():
 
 class PulseTrain(RadiationData):
     """Individual pulse arrival times from a counting tube, the rawest signal. This
-    is the point process the Phase 2 diffusion model trains on, so the times are
+    is the point process the diffusion model (to be added later) trains on, so the times are
     kept exactly as given, no binning and no debounce.
     """
 
@@ -205,7 +206,7 @@ class PulseTrain(RadiationData):
         return self.times
 
     def delta_t(self):
-        """Inter arrival times, the quantity Phase 2 actually consumes."""
+        """Inter arrival times."""
         return np.diff(self.times)
 
     def slice(self, start, stop):
@@ -238,10 +239,10 @@ class PulseTrain(RadiationData):
 
 
 class CountSeries(RadiationData):
-    """Counts accumulated per interval, what a polled counter really gives you.
-    times mark interval ends, durations their lengths, counts what landed inside.
+    """Counts accumulated per interval, what a polled counter gives.
+    Times mark interval ends, durations their lengths, counts what landed inside.
     Rates and their Poisson uncertainties are derived on access, never stored, so
-    they cannot drift out of sync with the raw counts.
+    they cannot get out of sync with the raw counts.
     """
 
     __slots__ = ("times", "durations", "counts")
@@ -332,7 +333,7 @@ class SpectrumSeries(RadiationData):
     """Channel spectra snapshotted over time, times by channels in one array.
     calibration holds polynomial coefficients (a0, a1, a2, ...) mapping channel to
     keV, the same shape the Radiacode reports. None means uncalibrated, and asking
-    for energies then raises instead of guessing.
+    for energies then raises instead of trying to guess or erroring.
     """
 
     __slots__ = ("times", "counts", "calibration", "durations")
@@ -363,7 +364,7 @@ class SpectrumSeries(RadiationData):
 
     @classmethod
     def from_file(cls, path, **kwargs):
-        """One recorded spectrum file becomes a one snapshot series, the zero hardware door
+        """One recorded spectrum file becomes a one snapshot series, the zero hardware way
         to anything record_spectrum wrote. Each file is its own run with its own clocks, so
         comparing runs means one series per file, not one series of many files."""
         d = read_spectrum_file(path)
