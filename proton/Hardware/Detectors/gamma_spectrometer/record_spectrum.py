@@ -2,11 +2,11 @@
 and keeps re-saving the latest one, so if the device drops out partway we can still keep what it gathered."""
 
 import argparse
-import csv
 from pathlib import Path
 import proton
 from proton.Hardware.Detectors.gamma_spectrometer.link import RadiaCodeDevice
 from proton.common.recording import record_snapshot
+from proton.common.data_handler import write_spectrum_file
 
 
 DEFAULT_DATA = Path(proton.__file__).resolve().parent.parent / "data" / "gamma_spectrometer" # where a fresh recording lands by default, kept in the repo root's data folder, out of the package and gitignored, separate from the bundled default_data
@@ -16,28 +16,21 @@ SAVE_INTERVAL = 30 # how often to re-save while it is gathering in seconds
 
 
 def write_spectrum(spectrum, out_path, device_id):
-    """Writes one spectrum out to out_path, a small header of metadata first, then the channel and counts table"""
-    out_path = Path(out_path)
-    out_path.parent.mkdir(parents = True, exist_ok = True)
-    tmp = out_path.with_name(out_path.name + ".tmp") # write into a temp file first so a crash mid write cannot wreck the real one
-    with tmp.open("w", newline = "") as f:
-        f.write("# device " + device_id + "\n")
-        f.write("# wall_time " + str(spectrum.wall_time) + "\n")
-        f.write("# monotonic " + str(spectrum.monotonic) + "\n")
-        f.write("# duration " + str(spectrum.duration) + "\n")
-        f.write("# a0 " + str(spectrum.a0) + "\n")
-        f.write("# a1 " + str(spectrum.a1) + "\n")
-        f.write("# a2 " + str(spectrum.a2) + "\n")
-        writer = csv.writer(f)
-        writer.writerow(("channel", "counts"))
-        for channel, count in enumerate(spectrum.counts):
-            writer.writerow((channel, count))
-    tmp.replace(out_path) # swap the finished file in once it is all the way written
+    """Writes one spectrum out to out_path, a small header of metadata first, then the channel and counts table.
+    The body moved into data_handler's write_spectrum_file so the format lives next to its parser, this
+    stays as the name the rest of this file and anyone importing it already uses."""
+    write_spectrum_file(spectrum, out_path, device_id)
 
 
 def record(name = None, directory = None, duration = DURATION, save_interval = SAVE_INTERVAL, bluetooth_mac = None):
     """This function resets the histogram, gathers for duration seconds, and keeps re-saving the latest spectrum as it goes.
     name is the file to write, and leaving it out just uses the default name in the default folder.
+
+    I moved the polling and re-saving into record_snapshot, the shared recorder's counterpart to
+    record_samples for a sample that is a whole file rather than one csv row. That means a device
+    dropout now surfaces as an OSError or a ProtonError, same as every other detector, instead of
+    the bare Exception I used to catch here. The spectrum file itself is never at risk either way,
+    since write_spectrum always finishes one file before the next read starts.
 
     I moved the polling and re-saving into record_snapshot, the shared recorder's counterpart to
     record_samples for a sample that is a whole file rather than one csv row. That means a device
