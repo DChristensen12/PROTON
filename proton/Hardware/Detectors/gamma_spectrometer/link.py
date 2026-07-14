@@ -52,7 +52,7 @@ class GeneralSpectrumDevice:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """Nothing to release, but I keep the shape of RadiaCodeDevice"""
+        """Nothing to release, but included for consistency"""
         return False
 
     def load(self, data_dir, parser = None, pattern = "*.csv"):
@@ -60,7 +60,7 @@ class GeneralSpectrumDevice:
         own parser to read a format other than ours, and pattern to match its extension. Called again it
         swaps the dataset instead of stacking. I treat a missing folder as a no op, since that's the
         default data path before I've ever recorded anything, but a path that exists and is neither a
-        directory nor a file I can read is an error, not a silent empty load.
+        directory nor a file we can read is an error, not a empty load.
         """
         path = Path(data_dir)
         if not path.exists():
@@ -124,7 +124,7 @@ class GeneralSpectrumDevice:
     def __len__(self):
         """How many spectra are loaded
 
-        A live reader gives me no stored spectra to count, so I raise here rather than answer
+        A live reader gives me no stored spectra to count, so we will raise here rather than answer
         0, which would look like an empty replay instead of a stream.
         """
         if self._reader is not None:
@@ -173,10 +173,10 @@ class GeneralSpectrumDevice:
         self._replace_column("monotonic", monotonic, float)
 
     def to_series(self, **kwargs):
-        """Hands the held spectra over as a SpectrumSeries, the door from this device into
+        """Gives the held spectra over as a SpectrumSeries, the entrance from this device into
         the analysis side. It assumes the snapshots came from one run, and the series checks
-        that (one calibration, one channel count, non decreasing clocks) and raises loudly
-        when handed a deck of unrelated reference spectra, convert those one at a time instead."""
+        that (one calibration, one channel count, non decreasing clocks) and raises whenever it is handed 
+        a deck of unrelated reference spectra, convert those one at a time instead."""
         if self._reader is not None:
             raise SpectrumError("this source streams, record it to files first and load those")
         if "detector_id" not in kwargs:
@@ -191,7 +191,7 @@ class GeneralSpectrumDevice:
     @classmethod
     def from_spectra(cls, spectra):
         """Builds a device straight from RawSpectrum objects you built yourself, whatever device they
-        came from. Parse your own file however you like into RawSpectrum, hand me the list, and it
+        came from. Parse your own file however you like into RawSpectrum, hand it the list, and it
         replays like any other.
         """
         return cls(spectra = list(spectra))

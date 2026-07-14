@@ -5,7 +5,7 @@
 //
 // Nothing here is specific to one detector. Any source with an active low pulse output works.
 // I wrote it against a GGreg20_V3, which pulls the line up itself, so the pin is a plain INPUT
-// and I trigger on the falling edge. There is no debounce on purpose. Debouncing would take the
+// and I trigger it on the falling edge. There is no debounce on purpose. Debouncing would take the
 // short interval tail, which is the part of the distribution I want to measure.
 //
 // Wiring: GGreg20 OUT to GPIO4, GGreg20 GND to ESP32 GND, GGreg20 BAT to ESP32 VIN and GND.

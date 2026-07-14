@@ -1,7 +1,7 @@
 """
 readout.py holds the pulse sources for geiger_pulses.
  
-A counter hands back a rate whenever I ask for one. This device only speaks when a particle shows up,
+A counter hands back a rate whenever we ask for one. This device only speaks when a particle shows up,
 so a read waits on the next pulse instead of sampling on a clock. That is why the recorder runs with a
 poll interval of zero here.
  

@@ -1,10 +1,11 @@
 """
 data_handler.py deals with common data handling across all aspects of the project.
+Formatting of data for other features of the project (the PINNs, FNOs, Diffusion Models, etc) is done here.
 It also enables the ability to add other types of data into PROTON that were not specified.
 
-Everything regarding data handling goes through here. 
-Hardware may import this file, but this file never imports Hardware. 
-Times are relative float64 seconds from acquisition start, t0 is the wall clock unix time of that start (None when unknown).
+Notes: 
+     - Hardware may import this file, but this file never imports Hardware. 
+     - Times are relative float64 seconds from acquisition start, t0 is the wall clock unix time of that start (None when unknown).
 TODO: Make a DataHandler collection class once needed"""
 
 import csv
@@ -14,16 +15,15 @@ from proton.common.exceptions import ProtonError
 
 
 class SpectrumError(ProtonError):
-    """Raised when a spectrum source cannot be loaded, read, or parsed"""
+    """This is raised when a spectrum source cannot be loaded, read, or parsed"""
 
-
-SPECTRUM_HEADER_FIELDS = ("a0", "a1", "a2", "duration", "wall_time", "monotonic")  # header keys a spectrum file in our own format has
-
+SPECTRUM_HEADER_FIELDS = ("a0", "a1", "a2", "duration", "wall_time", "monotonic")  # header keys for a spectrum file, in a format expected for PROTON
 
 def read_spectrum_file(path):
-    """Parses one spectrum file in our own format, the header values then the counts column.
-    Returns a dict whose keys line up with RawSpectrum's fields, so the device side can just
-    unpack it, and the container side can read it with no Hardware import.
+    """
+    This parses one spectrum file in our specified format, the header values then the counts column.
+    It returns a dict whose keys line up with RawSpectrum's fields, so the device side can just
+    unpack it, and the container side can read it.
     """
     path = Path(path)
     header = {}
@@ -33,7 +33,7 @@ def read_spectrum_file(path):
         for row in f:
             row = row.rstrip("\r\n")  # csv rows carry crlf, the header lines just lf
             if row.startswith("#"):
-                parts = row[1:].split()  # drop the hash, first token is the key
+                parts = row[1:].split()  # drops the hash, first token is the key anyways
                 if len(parts) >= 1:
                     header[parts[0]] = parts[1] if len(parts) >= 2 else ""
                 continue
@@ -41,7 +41,7 @@ def read_spectrum_file(path):
                 seen_table = True
                 continue
             if seen_table and row:
-                counts.append(int(row.split(",")[1]))  # just the count, rows are already in channel order
+                counts.append(int(row.split(",")[1]))  # just the count, the rows are already in channel order
     for key in SPECTRUM_HEADER_FIELDS:
         if key not in header:
             raise SpectrumError("spectrum file " + str(path) + " is missing the " + key + " header")
@@ -59,14 +59,11 @@ def read_spectrum_file(path):
 
 
 def write_spectrum_file(spectrum, out_path, device_id):
-    """
-    Writes one spectrum out to out_path, a small header of metadata first, then the channel
-    and counts table. It is next to read_spectrum_file so the format is in one place and
-    drift between the two breaks a test instead of a user.
-    """
+    """Writes one spectrum out to out_path, a small header of metadata first, then the channel
+    and counts table."""
     out_path = Path(out_path)
     out_path.parent.mkdir(parents = True, exist_ok = True)
-    tmp = out_path.with_name(out_path.name + ".tmp") # write into a temp file first so a crash mid write cannot wreck the real one
+    tmp = out_path.with_name(out_path.name + ".tmp") # writes into a temp file first so the event of a crash mid write cannot wreck the real one
     with tmp.open("w", newline = "") as f:
         f.write("# device " + device_id + "\n")
         f.write("# wall_time " + str(spectrum.wall_time) + "\n")
@@ -261,7 +258,7 @@ class PulseTrain(RadiationData):
 
 
 class CountSeries(RadiationData):
-    """Counts accumulated per interval, what a polled counter gives.
+    """Counts accumulated per interval, what a polled counter outputs.
     Times mark interval ends, durations their lengths, counts what landed inside.
     Rates and their Poisson uncertainties are derived on access, never stored, so
     they cannot get out of sync with the raw counts.
@@ -282,7 +279,8 @@ class CountSeries(RadiationData):
 
     @classmethod
     def from_cumulative(cls, times, totals, **kwargs):
-        """Builds a series from running totals, the shape RawSample reports. Differencing
+        """
+        Builds a series from running totals, the shape RawSample reports. Differencing
         turns cumulative counts into counts per interval, so the first sample only sets
         the baseline and produces no bin.
         """
@@ -316,7 +314,7 @@ class CountSeries(RadiationData):
             return cls([], [], [], **kwargs)
         if "t0" not in kwargs or kwargs["t0"] is None:
             kwargs["t0"] = wall[0] if wall else None
-        rel = np.asarray(mono) - mono[0]  # monotonic never jumps, so it carries the intervals
+        rel = np.asarray(mono) - mono[0]  # monotonic never jumps, so it just carries the intervals
         return cls.from_cumulative(rel, totals, **kwargs)
 
     def _times(self):
@@ -354,8 +352,7 @@ class CountSeries(RadiationData):
 class SpectrumSeries(RadiationData):
     """Channel spectra snapshotted over time, times by channels in one array.
     calibration holds polynomial coefficients (a0, a1, a2, ...) mapping channel to
-    keV, the same shape the Radiacode reports. None means uncalibrated, and asking
-    for energies then raises instead of trying to guess or erroring.
+    keV. None means uncalibrated, and asking for energies then raises instead of erroring.
     """
 
     __slots__ = ("times", "counts", "calibration", "durations")
