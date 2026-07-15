@@ -1,0 +1,1 @@
+# A specific place for composing palette + mode + rcParams 
