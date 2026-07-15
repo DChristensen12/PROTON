@@ -22,8 +22,10 @@ See [docs/hardware.md](docs/hardware.md) for additional information on the hardw
 
 # Current State/Updates
 
-07/13/2026:  
+07/14/2026:  
 
-I am going to refactor the hardware section with my `data_handler.py`. The thing that was bothering me was that the data handling seemed very inefficient. It also made it complicated to do the no hardware option, so I'm formulating all the data handling in `data_handler.py`, then refactoring the hardware support around it. Hardware is a supported feature for research and citizen science, not the main purpose of PROTON itself, so I'll fix it up as such. I'll merge the branch after the data handling is fixed and the hardware code is refactored and validated. I'll make the first release whenever I have the hardware support, first feature (PINNs, FNOs, etc) implemented, and the first visualizations and color themes are correctly implemented. As always, the updates will be public and visible in the commits and here in the current State/Updates! 
+I finished validating the hardware support. I am currently considering any design choices I could make for hardware support, in order to ensure it is easy and clear how to add hardware to PROTON if desired. I am editing the `hardware.md` document to be very thorough, I will commit it once it is to my liking. I have some tests written for everything, and I'll push them soon instead of only committing it once I finish (so the progression of tests is well documented). I am also adding initial data visualizations, essentially planning out the way I want to organize it for PROTON. 
+
+I will merge the branches once the hardware sections and their respective tests are completely done. A release will follow sometime after that!
 
 I will be updating this throughout the year! Stay tuned!
