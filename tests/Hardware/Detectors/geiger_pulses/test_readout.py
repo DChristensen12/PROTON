@@ -39,6 +39,35 @@ class TestRawPulseContract:
         assert RawPulse._fields == ("pulse_index", "dt_us", "wall_time", "monotonic")
 
 
+def write_pulse_csv(path, rows):
+    """Writes a pulse csv with the exact header the recorder produces, so a format change fails here"""
+    lines = ["pulse_index,dt_us,wall_time,monotonic"]
+    lines += [",".join(str(v) for v in row) for row in rows]
+    path.write_text("\n".join(lines) + "\n")
+
+class TestGeneralPulsesCsv:
+    """Tests for from_csv, which is how a recorded run gets loaded back for replay"""
+
+    def test_from_csv_reads_the_recorder_format(self, tmp_path):
+        """A file the recorder wrote should replay its dt_us column in order"""
+        path = tmp_path / "run.csv"
+        write_pulse_csv(path, [[1, 500, 0.0, 0.0], [2, 900, 0.0, 0.0]])
+        device = GeneralPulsesDevice.from_csv(path)
+        assert [device.read_raw_pulse().dt_us for _ in range(2)] == [500, 900]
+
+    def test_from_csv_takes_a_folder(self, tmp_path):
+        """Pointed at a folder, it should load the first csv in sorted name order"""
+        write_pulse_csv(tmp_path / "b.csv", [[1, 999, 0.0, 0.0]])
+        write_pulse_csv(tmp_path / "a.csv", [[1, 111, 0.0, 0.0]])
+        device = GeneralPulsesDevice.from_csv(tmp_path)
+        assert device.read_raw_pulse().dt_us == 111
+
+    def test_empty_folder_raises(self, tmp_path):
+        """A folder with no csv in it has nothing to replay, so it should say so"""
+        with pytest.raises(PulseError):
+            GeneralPulsesDevice.from_csv(tmp_path)
+
+
 class TestEspPulseDevice:
     """For tests relating to the EspPulseDevice wrapper"""
 
