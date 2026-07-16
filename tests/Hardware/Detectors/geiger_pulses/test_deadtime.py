@@ -15,9 +15,21 @@ def _read_dt_us(path):
     with path.open(newline = "") as f:
         return [int(row["dt_us"]) for row in csv.DictReader(f)]
 
+class TestTubeChoice:
+    """This only tests that the tube name realy does pick the dead tiem"""
+
+    def test_sbm20_uses_its_own_floor(self):
+        """185us is an artifact for the sbm20's 190us floor, but real for the j305's 180"""
+        real, artifacts = split_artifacts([185], tube = "sbm20")
+        assert artifacts == [185]
+        real, artifacts = split_artifacts([185], tube = "j305")
+        assert real == [185]
 
 class TestSplitArtifacts:
-    """Tests for the ratio between real intervals and sub dead time artifacts (when a single particle is counted by the detector twice)"""
+    """
+    Tests for the ratio between real intervals and sub dead time artifacts (when a single particle is counted by the 
+    detector twice)
+    """
 
     def test_below_dead_time_is_an_artifact(self):
         """A 150us gap is under the j305's 180us dead time, so it lands in artifacts not real"""
@@ -30,6 +42,17 @@ class TestSplitArtifacts:
         with pytest.raises(ValueError):
             split_artifacts([1000], tube = "not_a_tube")
 
+class TestModelLimits:
+    """This tests for where model stops being usable"""
+
+    def test_saturation_raises(self):
+        """The intervals at exactly the dead time put n times tau at one, and the model has to say so"""
+        with pytest.raises(ValueError):
+            correct([180, 180, 180], tube = "j305")
+
+    def test_empty_cut_reports_factor_one(self):
+        """With nothing getting through there is no correction to apply, so the factor stays one"""
+        assert correct([50, 90], tube = "j305").correction_factor == 1.0
 
 class TestCorrect:
     """Tests for the full correction, the double counts cut out plus the non paralyzable rate correction"""
