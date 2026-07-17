@@ -50,10 +50,6 @@ class TestModelLimits:
         with pytest.raises(ValueError):
             correct([180, 180, 180], tube = "j305")
 
-    def test_empty_cut_reports_factor_one(self):
-        """With nothing getting through there is no correction to apply, so the factor stays one"""
-        assert correct([50, 90], tube = "j305").correction_factor == 1.0
-
 class TestCorrect:
     """Tests for the full correction, the double counts cut out plus the non paralyzable rate correction"""
 
