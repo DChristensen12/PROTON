@@ -1,5 +1,6 @@
 """
-PROTON's visualization layer. use() picks the look, figure(), save() and animate() are the
+This is the __init__.py gor PROTON's visualization layer.
+use() picks the look, figure(), save() and animate() are the
 mechanics, and the plot modules build on both."""
 
 from proton.Visualizations.style import use, current

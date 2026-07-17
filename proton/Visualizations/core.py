@@ -8,7 +8,7 @@ from proton.Visualizations.style import current
  
 def figure(figsize = (7.0, 4.4)):
     """
-    This is one styled figure and axes. The rcParams from style.use carry the look, this just makes
+    This is one styled figure and axes. The rcParams from style.use define the look, this just makes
     sure current() ran so the defaults are in place before anything draws."""
     current()
     return plt.subplots(figsize = figsize)
