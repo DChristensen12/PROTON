@@ -22,10 +22,10 @@ See [docs/hardware.md](docs/hardware.md) for additional information on the hardw
 
 # Current State/Updates
 
-07/14/2026:  
+07/17/2026:  
 
-I finished validating the hardware support. I am currently considering any design choices I could make for hardware support, in order to ensure it is easy and clear how to add hardware to PROTON if desired. I am editing the `hardware.md` document to be very thorough, I will commit it once it is to my liking. I have some tests written for everything, and I'll push them soon instead of only committing it once I finish (so the progression of tests is well documented). I am also adding initial data visualizations, essentially planning out the way I want to organize it for PROTON. 
+The core parts of making custom data visualizations were made! Custom tables (including the first rendition of a PROTON table) are implemented. Still finishing up the tests to have a lot of coverage and the hardware support documentation.
 
-I will merge the branches once the hardware sections and their respective tests are completely done. A release will follow sometime after that!
+I will merge the branches once the hardware sections and their respective tests are completely done. A partial release will follow sometime after that (partial because the first release of PROTON can only be avaliable once PROTON actually does the data inference and visualizations it sets out to do)!
 
 I will be updating this throughout the year! Stay tuned!
