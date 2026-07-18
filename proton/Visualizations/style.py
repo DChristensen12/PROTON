@@ -65,8 +65,8 @@ def colors(n):
 def _register_cmap(pal):
     """This will build a palette's own colormap from its hex ramp and registers it under the palette
     name. It will only run for palettes that carry a tuple rather than a builtin name, and only once."""
+    import warnings
     from matplotlib.colors import LinearSegmentedColormap
-    if pal.name in mpl.colormaps:
-        return
-    mpl.colormaps.register(LinearSegmentedColormap.from_list(pal.name, list(pal.cmap)))
- 
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore") # the overwrite is deliberate, matplotlib warning  can be ignored
+        mpl.colormaps.register(LinearSegmentedColormap.from_list(pal.name, list(pal.cmap)), force = True)
