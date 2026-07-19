@@ -13,7 +13,7 @@ def main():
     "main here reads the run settings off the command line and records one run from the device"
     parser = argparse.ArgumentParser(description = f"record a run from {RadProDevice.__name__}")
     parser.add_argument("--duration", type =float, default = 3600, help = "how long to record, in seconds")
-    parser.add_argument("--port", default = RadProDevice.DEFAULT_PORT, help = "serial port teh device is on")
+    parser.add_argument("--port", default = RadProDevice.DEFAULT_PORT, help = "serial port the device is on")
     parser.add_argument("--name", default = DEFAULT_OUT_NAME, help = "file name inside the data folder")
     parser.add_argument("--dir", default = str(DEFAULT_DATA_DIR), help = "folder to write into")
     args = parser.parse_args()

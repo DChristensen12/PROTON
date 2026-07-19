@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "proton"
-version = "0.0.1"
+version = "0.1.0"
 description = "Physics-informed Radiation Operator and Time-series Optimized Network"
 requires-python = ">=3.12"
 dependencies = [
