@@ -7,14 +7,16 @@ name = "proton"
 version = "0.0.1"
 description = "Physics-informed Radiation Operator and Time-series Optimized Network"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "numpy",
+    "pandas",
+    "matplotlib",
+]
 
 [project.optional-dependencies]
 serial = ["pyserial>=3.5"]
 spectrometer = ["radiacode>=0.3.5"]
-dev = [
-    "pytest>=8",]
-test = ["pytest"]
+dev = ["pytest>=8"]
 
 [tool.setuptools.packages.find]
 # This is to pick up proton and every subpackage under it
