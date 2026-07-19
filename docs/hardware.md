@@ -8,27 +8,51 @@ If you're using one of the three supported types (a gamma spectrometer, or a gei
 
 ## Data acquisition
 
-Every detector package, general or specific, collects data the same way.
+Every detector records the same way: a `record_` script writes a run to a csv. The pulse detector also has a `check_` script that reads a few samples first so you can confirm the device is alive, and the spectrometer has one for checking the connection.
 
-Each one has a `check_` script that reads a few samples so you can confirm the device is alive, and a `record_` script that writes a full run to a csv. The examples below use the pulse detector, but the counts and spectrometer packages work the same way.
+Pulse detector (geiger_pulses):
 
 ```
-# read a handful of samples to confirm the wiring works
+# read a handful of pulses to confirm the wiring works
 python -m proton.Hardware.Detectors.geiger_pulses.check_pulses --count 20
 
 # record a run to a csv
 python -m proton.Hardware.Detectors.geiger_pulses.record_pulses --duration 3600 --name background_room
 ```
 
+Counts detector (geiger_counts):
+
+```
+python -m proton.Hardware.Detectors.geiger_counts.record_geiger_counts --duration 3600 --name background_counts
+```
+
+Gamma spectrometer (gamma_spectrometer), over USB:
+
+```
+python -m proton.Hardware.Detectors.gamma_spectrometer.check_spectrometer
+python -m proton.Hardware.Detectors.gamma_spectrometer.record_spectrum --duration 3600 --name background_spectrum
+```
+
+The spectrometer uses USB by default. To run it over Bluetooth on Linux, pass the device address with `--mac`:
+
+```
+python -m proton.Hardware.Detectors.gamma_spectrometer.record_spectrum --duration 3600 --mac 52:43:06:60:35:82
+```
+
 Parameters:
 
-- `--duration` is how many seconds to record.
-- `--name` is the output file name without the extension.
-- `--dir` is the folder to write into.
-- `--port` overrides the serial port (`/dev/ttyUSB0` on Linux, a `COM` name on Windows).
-- `--count`, on the check scripts, is how many samples to read before quitting.
+- `--duration` is how many seconds to record (record scripts, default 3600).
+- `--name` is the output file name (record scripts).
+- `--dir` is the folder to write into (record scripts).
+- `--port` overrides the serial port on the pulse and counts detectors (`/dev/ttyUSB0` or `/dev/ttyACM0` on Linux, a `COM` name on Windows). The spectrometer does not use `--port`; it takes `--mac` for Bluetooth instead.
+- `--count` sets how many pulses `check_pulses` reads before quitting.
+- `--tube` tells `check_pulses` which tube is fitted, `j305` or `sbm20`, so it knows the dead time to check against.
+- `--mac` selects Bluetooth on the spectrometer scripts.
+- `--wait` sets the pause between the two reads in `check_spectrometer`.
 
-What gets collected depends on the detector. The pulse device records one row per detected pulse, with the gap in microseconds since the previous pulse. The counts device records a running pulse total and the tube rate on a fixed cadence. The spectrometer records a full energy histogram per snapshot. Either way, the specific and general classes write the same columns, so a replayed run looks the same as a live one downstream.
+Every script also takes `--help`, which lists its options and defaults.
+
+What gets collected depends on the detector. The pulse device records one row per detected pulse, with the microsecond gap since the previous pulse. The counts device records a running pulse total and the tube's own rate estimate on a fixed cadence. The spectrometer writes a full energy histogram per snapshot, rewriting the file each interval so the latest snapshot is always the one on disk. In every case the specific and general classes write the same columns, so a replayed run looks the same as a live one downstream.
 
 
 ## Example of a Valid Hardware Setup

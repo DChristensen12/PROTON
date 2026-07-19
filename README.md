@@ -20,12 +20,21 @@ Direct support was built for three detectors (detailed in `hardware.md`) because
 
 See [docs/hardware.md](docs/hardware.md) for additional information on the hardware setup (such as detailed examples of wiring, topology, and detector setups)!
 
-# Current State/Updates
+### Collecting Data
 
-07/17/2026:  
+Every detector has a `record_` script to write a run to a csv, and the pulse detector and the spectrometer each also have a `check_` script to confirm the device is connected and running before you commit to a full run. For example, for the pulse detector:
 
-The core parts of making custom data visualizations were made! Custom tables (including the first rendition of a PROTON table) are implemented. Still finishing up the tests to have a lot of coverage and the hardware support documentation.
+```
+python -m proton.Hardware.Detectors.geiger_pulses.check_pulses --count 20
+python -m proton.Hardware.Detectors.geiger_pulses.record_pulses --duration 3600 --name background_room
+```
 
-I will merge the branches once the hardware sections and their respective tests are completely done. A partial release will follow sometime after that (partial because the first release of PROTON can only be avaliable once PROTON actually does the data inference and visualizations it sets out to do)!
+The spectrometer follows the same check_/record_ pattern; the counts package only has the record_ script. The command details, parameters, wiring, and the Linux setup notes are also in [docs/hardware.md](docs/hardware.md). 
+
+## Current State/Updates
+
+07/19/2026:  
+
+I have finished hardware support and inital visualizations (both will likely require other updates and polishing as the project develops)! the hardware-parity ane main branch have been merged and now I'll be working on implementing a core part of PROTON, diffusion modeling. I will also be iterating different versions of the visualizations (especially the PROTON style 3D table, which is a bit rough around the edges right now).
 
 I will be updating this throughout the year! Stay tuned!
