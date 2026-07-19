@@ -25,7 +25,7 @@ _active = {"geometry": None, "palette": None, "mode": None} # When someone speci
 def use(geometry = "formal", palette = "formal", mode = "light"):
     """
     Activate a style! This will apply the composed rcParams, register the proton colormap the first
-    time it is needed, and then it;ll remember the choice for current() to hand back to plots."""
+    time it is needed, and then it'll store the choice for current() to return to plots."""
     if geometry not in GEOMETRIES:
         raise ProtonError("no geometry named " + str(geometry) + ", have: " + ", ".join(GEOMETRIES))
     if palette not in PALETTES:
@@ -49,16 +49,16 @@ def current():
  
  
 def colors(n):
-    """ This function hands back n colors off the active palette, in cycle order.
- 
-    It will raise rather than wrapping around the color palette. A palette is as long as its theme really is, so running it 
-    past the end is a sign the plot wants a different palette, not a repeat color. """
+    """ This function returns n colors off the active palette, in cycle order.
+
+    It will raise rather than wrapping around the color palette. A palette is as long as its theme really is, so running it
+    past the end is a sign that a different palette is needed, not a repeat color. """
     _, pal, _ = current()
     if n > len(pal.cycle):
         wide = [p.name for p in PALETTES.values() if len(p.cycle) >= n]
         raise ProtonError(
-            "the " + pal.name + " palette carries " + str(len(pal.cycle)) + " colors and the plot "
-            "asked for " + str(n) + ". Palettes that reach: " + ", ".join(sorted(wide)))
+            "the " + pal.name + " palette carries " + str(len(pal.cycle)) + " colors, but " +
+            str(n) + " were requested. Palettes that reach: " + ", ".join(sorted(wide)))
     return list(pal.cycle[:n])
  
  

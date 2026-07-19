@@ -5,13 +5,13 @@ from proton.Hardware.Detectors.geiger_pulses import record_pulses
 
 
 class FakeEsp:
-    """Stands in for EspPulseDevice, remembering how it was built"""
+    """Stands in for EspPulseDevice, recording how it was built"""
 
     DEFAULT_POLL_INTERVAL = 0.0
     last = None
 
     def __init__(self, port = None):
-        """Remembers itself so a test can check the port it was handed"""
+        """Stores a reference to itself so a test can check the port it was given"""
         FakeEsp.last = self
         self.port = port
 
@@ -52,7 +52,7 @@ class TestRecord:
         assert captured["out_path"] == tmp_path / "myrun.csv"
 
     def test_forwards_the_port(self, tmp_path, monkeypatch):
-        """A port handed to record should reach the device it opens"""
+        """A port passed to record should reach the device it opens"""
         monkeypatch.setattr(record_pulses, "EspPulseDevice", FakeEsp)
         monkeypatch.setattr(record_pulses, "record_samples", lambda **kw: 0)
         record_pulses.record(out_dir = tmp_path, port = "/dev/xyz")

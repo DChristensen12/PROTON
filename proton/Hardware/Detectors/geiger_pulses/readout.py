@@ -1,9 +1,9 @@
 """
 readout.py holds the pulse sources for geiger_pulses.
  
-A counter hands back a rate whenever we ask for one. This device only speaks when a particle shows up,
-so a read waits on the next pulse instead of sampling on a clock. That is why the recorder runs with a
-poll interval of zero here.
+A counter returns a rate whenever it is queried. This device only produces a reading when a particle
+shows up, so a read waits on the next pulse instead of sampling on a clock. That is why the recorder
+runs with a poll interval of zero here.
  
 EspPulseDevice is the ESP32 I used in my own setup. It is one way in, not the only one.
 GeneralPulsesDevice takes intervals from wherever they come from, whether that is a csv I recorded, a
@@ -107,7 +107,7 @@ class EspPulseDevice:
         csv with thousands of duplicate rows before anything downstream noticed.
 
         I read with read_until rather than readline. readline is inherited from io.IOBase and
-        can hand back a partial line when the timeout fires mid line. read_until is pyserial's
+        can return a partial line when the timeout fires mid line. read_until is pyserial's
         own implementation, and only returns on the terminator or the timeout.
         """
         while True:
@@ -146,9 +146,9 @@ class EspPulseDevice:
 
 
 class GeneralPulsesDevice:
-    """A pulse source that does not care where the intervals come from.
+    """A pulse source that is agnostic to where the intervals come from.
 
-    EspPulseDevice speaks one board over one serial format. This one takes any source of delta t in
+    EspPulseDevice works with one board over one serial format. This one takes any source of delta t in
     microseconds, so a csv, a synthetic series, or somebody else's hardware all reach the recorder
     through the same door. Build it with one of the three constructors below rather than calling
     __init__ directly.
@@ -190,7 +190,7 @@ class GeneralPulsesDevice:
 
     @staticmethod
     def _cursor(values):
-        """Turn a list into a callable that hands back one value per call"""
+        """Turn a list into a callable that returns one value per call"""
         state = {"i": 0}
 
         def read_dt():
@@ -204,7 +204,7 @@ class GeneralPulsesDevice:
         return read_dt
 
     def get_device_id(self):
-        """Answer like the esp32 device so the recorder cannot tell the two apart"""
+        """Return an id shaped like the esp32 device's, so the recorder cannot tell the two apart"""
         return self._device_id
 
     def read_raw_pulse(self):
@@ -245,8 +245,8 @@ class GeneralPulsesDevice:
         return values
 
     def to_train(self, **kwargs):
-        """Hands the held intervals over as a PulseTrain, the door from this device into the
-        analysis side. It converts the microsecond gaps to seconds and hands over the whole
+        """Converts the held intervals into a PulseTrain, the door from this device into the
+        analysis side. It converts the microsecond gaps to seconds and returns the whole
         stored series regardless of how far a replay has read. There is no wall clock behind
         stored intervals, so t0 stays None unless the caller passes one."""
         if self._intervals is None:
@@ -268,7 +268,7 @@ class GeneralPulsesDevice:
         return False
 
     def __len__(self):
-        """How many stored intervals are still waiting. A streaming source has no answer to give"""
+        """How many stored intervals are still waiting. A streaming source has no length to report"""
         if self._intervals is None:
             raise PulseError("this source streams, so its length is not known")
         return max(0, len(self._intervals) - self._index)

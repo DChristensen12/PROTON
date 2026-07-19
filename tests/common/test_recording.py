@@ -114,11 +114,11 @@ class TestOutcomeReporting:
         assert "finished the full run" in captured.out
         assert "stopped early" not in captured.err
 
-    def test_zero_rows_says_the_device_gave_nothing(self, tmp_path, capsys):
+    def test_zero_rows_says_the_device_returned_nothing(self, tmp_path, capsys):
         """Test that a run gathering nothing states why rather than just reporting a count of zero."""
         record_samples(read_one = lambda: RawSample(1, 1.0, 0.0, 0.0), out_path = tmp_path / "o.csv",
                        duration = 0, poll_interval = 0, fields = GeneralCountsDevice.FIELDS)
-        assert "the device gave nothing" in capsys.readouterr().err
+        assert "the device returned nothing" in capsys.readouterr().err
 
     def test_snapshot_early_stop_names_the_exception(self, tmp_path, capsys):
         """Test that record_snapshot marks an early stop the same way record_samples does."""

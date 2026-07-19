@@ -27,8 +27,8 @@ rng = np.random.default_rng(4)
 class FakeSpectrum:
     """Stand-in for RawSpectrum so the spectrum tests do not import Hardware.
 
-    Holds the seven fields the containers read, with defaults so a test only sets what it cares
-    about.
+    Holds the seven fields the containers read, with defaults so a test only sets what is
+    relevant to it.
     """
 
     def __init__(self, counts, a0 = 1.0, a1 = 2.5, a2 = 0.001, duration = 60.0,
@@ -112,7 +112,7 @@ class TestPulseTrain:
         assert isinstance(train.binned(1.0), CountSeries)
 
     def test_empty_train_is_safe(self):
-        """Test that zero pulses gives empty answers rather than raising."""
+        """Test that zero pulses gives empty results rather than raising."""
         train = PulseTrain([])
         assert train.duration() == 0.0
         assert train.delta_t().size == 0

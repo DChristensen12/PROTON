@@ -17,7 +17,7 @@ _BUILTIN_MODES = frozenset(themes.MODES)
 _BUILTIN_GEOMETRIES = frozenset(GEOMETRIES)
 _HEX = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
-LOOKS = {} # name -> (geometry, palette, mode), a saved answer to use()
+LOOKS = {} # name -> (geometry, palette, mode), a saved set of arguments for use()
 
 
 def _check_hex(value, where):

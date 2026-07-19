@@ -142,7 +142,7 @@ class TestGeneralCountsFromSamples:
         assert sample.tube_rate == 1.5 and isinstance(sample.tube_rate, float)
 
     def test_carries_the_device_id(self):
-        """Test that a named device answers get_device_id with that name."""
+        """Test that a named device returns that name from get_device_id."""
         device = GeneralCountsDevice.from_samples([RawSample(1, 1.0, 0.0, 0.0)], device_id = "mine")
         assert device.get_device_id() == "mine"
 
@@ -225,7 +225,7 @@ class TestToSeries:
         assert device.to_series().t0 == 1000.0
 
     def test_streaming_source_raises(self):
-        """Test that a live reader raises on to_series, having no held rows to hand over."""
+        """Test that a live reader raises on to_series, having no held rows to return."""
         device = GeneralCountsDevice.from_readers(read_pulse_count = lambda: 1, read_tube_rate = lambda: 1.0)
         with pytest.raises(ValueError):
             device.to_series()

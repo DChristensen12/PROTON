@@ -7,7 +7,7 @@ from proton.Hardware.Detectors.geiger_pulses.readout import RawPulse
 
 
 class CannedEsp:
-    """Hands back a fixed list of dt_us values as pulses"""
+    """Returns a fixed list of dt_us values as pulses"""
 
     values = []   # a test sets this before building
 
@@ -29,7 +29,7 @@ class CannedEsp:
         return "canned"
 
     def read_raw_pulse(self):
-        """Hands back the next canned interval"""
+        """Returns the next canned interval"""
         dt = self._values[self._n]
         self._n += 1
         return RawPulse(self._n, dt, 0.0, 0.0)

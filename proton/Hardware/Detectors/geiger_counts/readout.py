@@ -12,7 +12,7 @@ from proton.common.data_handler import CountSeries
 class RawSample(NamedTuple):
     """Pulls one raw reading off a device, stampled with when it is read"""
     pulse_count: int # the running total of pulses the tube has counted, the real raw signal
-    tube_rate: float # the rate the device reports itself in cpm
+    tube_rate: float # the rate the device computes internally, in cpm
     wall_time: float # unix time
     monotonic: float # a clock that never jumps back, used for intervals
 
@@ -56,7 +56,7 @@ class GeneralCountsDevice:
         """
 
         self._samples = [] # one list of RawSample, so adding a field means touching RawSample and nothing else
-        self._cursor = 0 # The stored row read_raw_sample hands back next
+        self._cursor = 0 # The stored row read_raw_sample returns next
         self._reader = reader
         self._device_id = device_id
         if reader is not None:
@@ -132,7 +132,7 @@ class GeneralCountsDevice:
                 ))
 
     def read_raw_sample(self):
-        """Hands back the next stored sample as RawSample, then steps the cursor"""
+        """Returns the next stored sample as RawSample, then steps the cursor"""
         if self._reader is not None:
             return self._reader()
         if self._cursor >= len(self._samples):
@@ -149,7 +149,7 @@ class GeneralCountsDevice:
         self._cursor = 0
 
     def get_device_id(self):
-        """A stand in id, so the code that records which device it used still gets ananswer."""
+        """A stand in id, so the code that records which device it used still gets a value back."""
         if self._device_id is not None:
             return self._device_id
         if self._reader is not None:
@@ -192,14 +192,14 @@ class GeneralCountsDevice:
         """How many stored samples is being held in the moment this is called
 
         A live reader gives me no stored rows to count, so I raise here rather than
-        answer 0, which would look like an empty replay instead of a stream.
+        return 0, which would look like an empty replay instead of a stream.
         """
         if self._reader is not None:
             raise ValueError("this source streams, so its length is not known")
         return len(self._samples)
 
     def to_series(self, **kwargs):
-        """Hands the held samples over as a CountSeries, the door from this device into the
+        """Converts the held samples into a CountSeries, the door from this device into the
         analysis side. pulse_count is cumulative, so the series differences it into counts per
         interval, with times off monotonic relative to the first sample and t0 off its wall_time.
         The device's own cpm estimate stays behind, the series derives rates from raw counts."""
@@ -252,7 +252,7 @@ class GeneralCountsDevice:
 
 class RadProDevice:
     """ Wrapper around the Rad Pro serial protocol. It opens the serial port, sends
-    the GET commands, and hands back the device id, the running pulse count, the tube rate,
+    the GET commands, and returns the device id, the running pulse count, the tube rate,
     and the timestamped raw samples."""
 
     DEFAULT_PORT = "/dev/ttyACM0" # This is where GC-01 lands on my machine, could also be /dev/ttyACM0
@@ -274,7 +274,7 @@ class RadProDevice:
         timeout = timeout if timeout is not None else self.SERIAL_TIMEOUT
         self._port_name = port
         if serial_port is not None:
-            self._serial = serial_port # Use object handed to it
+            self._serial = serial_port # Use the object passed in
         else:
             import serial  # I only need this installed for the real device path
             self._serial = serial.Serial(port, baudrate = baud, timeout = timeout)
@@ -316,7 +316,7 @@ class RadProDevice:
         raise RadProError("no usable response to command: " + command)
 
     def get_device_id(self):
-        """Asks the device who it is to confirm we are talking to the right one"""
+        """Reads the device's own id, to confirm we are talking to the right one"""
         return self._command("GET deviceId")
 
     def get_pulse_count(self):
@@ -324,7 +324,7 @@ class RadProDevice:
         return int(self._command("GET tubePulseCount"))
 
     def get_tube_rate(self):
-        """Reads the rate the device reports for itself, in counts per minute"""
+        """Reads the rate the device computes on its own, in counts per minute"""
         return float(self._command("GET tubeRate"))
 
     def read_raw_sample(self):

@@ -24,7 +24,7 @@ class RawSpectrum(NamedTuple):
 class GeneralSpectrumDevice:
     """
     General device method for gamma spectrometers, and for spectra producing devices in general.
-    It replays stored spectra, or ones you hand it via your device, as the same RawSpectrum the real device gives.
+    It replays stored spectra, or ones you hand it via your device, as the same RawSpectrum the real device produces.
     A file is one whole spectrum, so one file replays as one read. Point load at another file format
     with your own parser, or hand it RawSpectrum objects straight, so you can use it with no Radiacode
     or with any other spectrum device.
@@ -45,7 +45,7 @@ class GeneralSpectrumDevice:
         if spectra is not None:
             self._load_spectra(spectra)
             return
-        self.load(self.DEFAULT_DATA_DIR if data_dir is None else data_dir) # no reader or handed spectra means we use the data files
+        self.load(self.DEFAULT_DATA_DIR if data_dir is None else data_dir) # no reader or given spectra means we use the data files
 
     def __enter__(self):
         """Lets you use the device in a with block"""
@@ -77,7 +77,7 @@ class GeneralSpectrumDevice:
 
     def _load_spectra(self, spectra):
         """Normalizes an iterable of RawSpectrum shaped objects into the replay list and rewinds.
-        Every source funnels through here, so any device reaches replay by handing over RawSpectrum.
+        Every source funnels through here, so any device reaches replay by providing RawSpectrum objects.
         """
         self._spectra = [
             RawSpectrum(
@@ -100,7 +100,7 @@ class GeneralSpectrumDevice:
         return RawSpectrum(**read_spectrum_file(path))
 
     def read_raw_spectrum(self):
-        """Hands back one spectrum, live from the reader if there is one, otherwise the next replayed file"""
+        """Returns one spectrum, live from the reader if there is one, otherwise the next replayed file"""
         if self._reader is not None:
             return self._reader()  # live mode, so the cursor never moves
         if len(self) == 0:
@@ -116,7 +116,7 @@ class GeneralSpectrumDevice:
         self._cursor = 0
 
     def get_device_id(self):
-        """Names itself as a live source or a replay stand in with how many spectra it holds"""
+        """Builds a label naming this as a live source or a replay stand in, with how many spectra it holds"""
         if self._reader is not None:
             return "general spectrum live"
         return "general spectrum replay, " + str(len(self)) + " spectra"
@@ -124,7 +124,7 @@ class GeneralSpectrumDevice:
     def __len__(self):
         """How many spectra are loaded
 
-        A live reader gives me no stored spectra to count, so we will raise here rather than answer
+        A live reader gives me no stored spectra to count, so we will raise here rather than return
         0, which would look like an empty replay instead of a stream.
         """
         if self._reader is not None:
@@ -173,10 +173,10 @@ class GeneralSpectrumDevice:
         self._replace_column("monotonic", monotonic, float)
 
     def to_series(self, **kwargs):
-        """Gives the held spectra over as a SpectrumSeries, the entrance from this device into
+        """Converts the held spectra into a SpectrumSeries, the entrance from this device into
         the analysis side. It assumes the snapshots came from one run, and the series checks
-        that (one calibration, one channel count, non decreasing clocks) and raises whenever it is handed 
-        a deck of unrelated reference spectra, convert those one at a time instead."""
+        that (one calibration, one channel count, non decreasing clocks) and raises whenever it is given
+        a batch of unrelated reference spectra, convert those one at a time instead."""
         if self._reader is not None:
             raise SpectrumError("this source streams, record it to files first and load those")
         if "detector_id" not in kwargs:
@@ -199,7 +199,7 @@ class GeneralSpectrumDevice:
     @classmethod
     def from_reader(cls, counts_reader, a0 = 0.0, a1 = 0.0, a2 = 0.0, duration_reader = None):
         """Builds a live device from your own read function, for a spectrometer PROTON does not have a special class for.
-        counts_reader gives one histogram, duration_reader the seconds it covers. Calibration stays fixed since it does belong
+        counts_reader returns one histogram, duration_reader the seconds it covers. Calibration stays fixed since it does belong
         to the detector in a sense, and we stamp both clocks at read time.
         """
         def reader():
@@ -220,7 +220,7 @@ class GeneralSpectrumDevice:
 
 class RadiaCodeDevice:
     """ A wrapper around a radiacode scintillation detector. This opens the usb or bluetooth link, and
-    hands back the device id and the timestamped raw spectra."""
+    returns the device id and the timestamped raw spectra."""
 
     DEFAULT_MODEL = "102" # what i personally have, change it if you are on a 103 or 110
     DEFAULT_POLL_INTERVAL = 30.0 # I copied this from record_spectrum.py's SAVE_INTERVAL, the cadence I already re-read a spectrum at
@@ -236,7 +236,7 @@ class RadiaCodeDevice:
 
         self._model = model if model is not None else self.DEFAULT_MODEL
         if device is not None:
-            self._rc = device # uses the object handed to it
+            self._rc = device # uses the object passed in
         else:
             from radiacode import RadiaCode  # we only need this installed for the real device path
             self._rc = RadiaCode(bluetooth_mac = bluetooth_mac, serial_number = serial_number, ignore_firmware_compatibility_check = ignore_firmware_check)
@@ -255,7 +255,7 @@ class RadiaCodeDevice:
         self._rc = None
 
     def get_device_id(self):
-        """Names the model and serial, so the code that records which detector it used still gets an answer"""
+        """Names the model and serial, so the code that records which detector it used still gets a value back"""
         return "Radiacode " + self._model + " " + self._rc.serial_number()
 
     def read_raw_spectrum(self):

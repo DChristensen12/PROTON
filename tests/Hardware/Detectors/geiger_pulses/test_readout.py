@@ -172,8 +172,8 @@ class TestParity:
             assert type(pulse)._fields == RawPulse._fields
 
     def test_device_id_is_a_string_however_its_sourced(self):
-        """EspPulseDevice labels itself by port, since the board never reports a serial number;
-        GeneralPulsesDevice just echoes whatever device_id it was built with.
+        """EspPulseDevice's label is built from its port, since the board never reports a serial
+        number; GeneralPulsesDevice just echoes whatever device_id it was built with.
         """
         esp = EspPulseDevice(serial_port = FakeSerial([]))
         general = GeneralPulsesDevice.from_intervals([])
@@ -293,7 +293,7 @@ class TestToTrain:
         assert device.to_train().detector_id == "my_board"
 
     def test_streaming_source_raises(self):
-        """Test that a live reader raises on to_train, having no held series to hand over."""
+        """Test that a live reader raises on to_train, having no held series to return."""
         device = GeneralPulsesDevice.from_reader(lambda: 1)
         with pytest.raises(PulseError):
             device.to_train()

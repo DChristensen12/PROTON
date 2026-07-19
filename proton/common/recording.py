@@ -1,7 +1,7 @@
 """
 recording.py is for data collection via a device, that doesn't depend on what device it is getting data from. 
 It polls a read function on a clock and streams each sample to a csv, flushing as it goes long, so that any device can
-hand back one sample at a time and can be recorded the same way.
+return one sample at a time and can be recorded the same way.
 
 This is so that
      1.) There is a way to use many different polled hardware devices (if using detectors to collect data for PROTON)
@@ -27,7 +27,7 @@ def _report_outcome(status, written, error, duration, out_path, noun):
         print(f"recording stopped early after {written} {noun}: {error}", file = sys.stderr)
     elif status == "completed" and written == 0:
         # the loop ran its course but never got one successful read
-        print(f"recording produced no {noun}: the device gave nothing before recording ended", file = sys.stderr)
+        print(f"recording produced no {noun}: the device returned nothing before recording ended", file = sys.stderr)
     elif status == "completed":
         print(f"recording finished the full run: {written} {noun} written over {duration} seconds")
     print("wrote", written, noun, "to", out_path)
@@ -89,7 +89,7 @@ def record_samples(read_one, out_path, duration, poll_interval, fields = None):
             print("Stopped early 0-0")
 
         except (OSError, ProtonError) as problem:
-            # The device dropped out or stopped answering partway through.
+            # The device disconnected or a read failed partway through.
             # Rows written are safe, _report_outcome below prints this with the exception
             status = "stopped"
             error = problem
@@ -135,7 +135,7 @@ def record_snapshot(read_one, out_path, duration, poll_interval, write):
         print("Stopped early 0-0")
 
     except (OSError, ProtonError) as problem:
-        # the device dropped out or stopped answering partway through, the last snapshot is still safe
+        # the device disconnected or a read failed partway through, the last snapshot is still safe
         # _report_outcome below prints this with the exception
         status = "stopped"
         error = problem
