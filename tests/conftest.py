@@ -1,88 +1,85 @@
-# This holds any shared fakes and fixtures for the suite, so no test needs a real GC-01 plugged in. I got the real replies needed for this to work.
+"""Shared fakes (devices) and fixtures for the suite, so that no test needs a real device to be plugged in for testing"""
 
 import pytest
 from proton.Hardware.Detectors.geiger_counts.readout import RawSample
 
 
-# These are some real GC-01 replies that were captured off the live device
+# Captured off a real detector (the GC-01), so tests against these replies match what the device actually sends
 REAL_REPLIES = {
-    "GET deviceId": [b"OK FNIRSI GC-01 (CH32F103C8);Rad Pro 3.1.1/en;51003200080000484e52544e\r\n"],
-    "GET tubePulseCount": [b"OK 26928\r\n"],
-    "GET tubeRate": [b"OK 19.152\r\n"],
+    "GET deviceId": [b"OK FNIRSI GC-01 (CH32F103C8);Rad Pro 3.1.1/en;51003200080000484e52544e\r\n"], "GET tubePulseCount": [b"OK 26928\r\n"],
+    "GET tubeRate": [b"OK 19.152\r\n"]
 }
 
 class FakeSerial:
-    """Stand in for a pyserial port, answering commands with canned bytes and keeping what was sent"""
+    """Stand in for a pyserial port, returning canned bytes for each command and keeping what was sent"""
 
     def __init__(self, replies = None):
-        """This just sets up the reply table and an empty record of writes"""
         self.replies = dict(replies) if replies else {}
         self.is_open = True
-        self.written = []        # Every command we were handed
-        self._pending = []       # Reply lines still waiting to be read
+        self.written = []
+        self._pending = []
 
     def __enter__(self):
-        """This lets it work in a with block"""
+        """Let the fake be used in a with block"""
         return self
 
     def __exit__(self, *exc):
-        """This closes on the way out"""
+        """Close on the way out, matching the real serial context manager"""
         self.close()
 
     def reset_input_buffer(self):
-        """This one drops anything still pending"""
+        """Drop whatever reply is queued, like the real port discarding its buffer"""
         self._pending = []
 
     def write(self, data):
-        """This records the command and queues up its reply"""
+        """Record the command and queue its reply"""
         command = data.decode("ascii").strip()
         self.written.append(command)
-        reply = self.replies.get(command, [b"ERROR\r\n"])   # an unknown command reads as a device error
+        reply = self.replies.get(command, [b"ERROR\r\n"])  # an unknown command reads as a device error
         if callable(reply):
-            reply = reply()      # lets a test grow the reply between calls
+            reply = reply()  # this allows a test to grow the reply in between calls
         self._pending = list(reply) if isinstance(reply, list) else [reply]
 
     def readline(self):
-        """Hands back the next pending line, or empty bytes for a timeout"""
+        """Returns the next pending line, or empty bytes to simulate a timeout; tests that a 
+        timeout occurs in FakeSerial when we want it to"""
         if self._pending:
             return self._pending.pop(0)
         return b""
 
     def close(self):
-        """marks the port shut"""
+        """Mark the port closed, mirroring pyserial's close"""
         self.is_open = False
 
 
 class FakeDevice:
-    """A serial free stand in device, so record_device can be tested alone. hands back samples until
-    stop_after, then raises like a device that dropped off the bus"""
+    """Tests that record_device can be tested alone via having a serial-free stand-in device"""
 
     DEFAULT_PORT = "/dev/fake"
     DEFAULT_POLL_INTERVAL = 0.0
-    last = None                  # the most recent instance built, so a test can inspect it
+    last = None  # the most recent instance built, so a test can inspect it
 
     def __init__(self, port = None, stop_after = 3):
-        """ This remembers itself as the last device and starts the sample counter at zero"""
         FakeDevice.last = self
         self.port = port
         self.closed = False
         self.stop_after = stop_after
-        self._n = 0
+        self._n = 0   # how many samples returned so far
 
     def __enter__(self):
-        """opens in a with block"""
+        """Let the fake be used in a with block"""
         return self
 
     def __exit__(self, *exc):
-        """flags that it was closed"""
+        """Mark closed on the way out"""
         self.closed = True
 
     def get_device_id(self):
-        """stand in id"""
+        """Return a fixed label, since no real hardware is behind this fake"""
         return "fake device"
 
     def read_raw_sample(self):
-        """climbs a sample until stop_after, then raises to mimic an unplug"""
+        """Return samples until stop_after, then raise like a device that dropped off the bus"""
         if self._n >= self.stop_after:
             raise OSError("fake device dropped off")
         self._n += 1
@@ -90,26 +87,26 @@ class FakeDevice:
 
 @pytest.fixture
 def real_replies():
-    """This hands over the captured real replies"""
+    """Return the captured real device replies"""
     return REAL_REPLIES
 
 
 @pytest.fixture
 def fake_serial():
-    """This hands over the FakeSerial class to build whatever replies a test needs"""
+    """Return the FakeSerial class to build whatever replies a test needs"""
     return FakeSerial
 
 
 @pytest.fixture
 def fake_device():
-    """This hands over the FakeDevice class, clearing its last so nothing bleeds between tests"""
+    """Return the FakeDevice class, clearing last so nothing crosses between tests"""
     FakeDevice.last = None
     return FakeDevice
 
 
 @pytest.fixture
 def sample_csv(tmp_path):
-    """This writes one small valid counts csv and hands back its folder for the replay side"""
+    """Write one small valid counts csv and return its folder for the replay side"""
     (tmp_path / "run.csv").write_text(
         "pulse_count,tube_rate,wall_time,monotonic\n"
         "10,20.0,1000.0,5.0\n"

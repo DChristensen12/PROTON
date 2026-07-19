@@ -1,20 +1,30 @@
+# Byte-compiled / optimized files
 __pycache__/
 *.py[cod]
+
+# Distribution / packaging
 *.egg-info/
 .eggs/
 build/
 dist/
 *.egg-link
+
+# Test and linter caches
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Editor / IDE
 .vscode/
 .idea/
 
-# environments. I use conda, but I'll cover the common venv names too
+# Build tooling
+compile_commands.json
+
+# Local data
+data/ # Default_data already bundled. This is data that only exists on one's own computer.
+
+# Environments
 .venv/
 venv/
 env/
-
-# logged captures. I will keep the data/raw folder in the repo with a .gitkeep 
-data/raw/*.csv

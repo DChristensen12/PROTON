@@ -1,0 +1,1 @@
+# I intend for this file to be relating to domain colored FNO filters, the diffusion score field
