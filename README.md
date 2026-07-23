@@ -33,8 +33,8 @@ The spectrometer follows the same check_/record_ pattern; the counts package onl
 
 ## Current State/Updates
 
-07/19/2026:  
+07/23/2026:  
 
-I have finished hardware support and inital visualizations (both will likely require other updates and polishing as the project develops)! the hardware-parity ane main branch have been merged and now I'll be working on implementing a core part of PROTON, diffusion modeling. I will also be iterating different versions of the visualizations (especially the PROTON style 3D table, which is a bit rough around the edges right now).
+I am currently doing additional research on diffusion models and planning visualization improvements for the existing code. The logo for PROTON is also currently being finalized! 
 
 I will be updating this throughout the year! Stay tuned!
