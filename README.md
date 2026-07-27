@@ -8,8 +8,11 @@
 
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12%2B-blue"></a>
-  <a href="https://github.com/DChristensen12/PROTON/blob/main/LICENSE"><img src="https://img.shields.io/github/license/DChristensen12/PROTON"></a>
+  <a href="https://github.com/DChristensen12/PROTON/blob/main/LICENSE"><img src="https://img.shields.io/github/license/DChristensen12/PROTON?color=ec4899"></a>
   <a href="https://github.com/DChristensen12/PROTON/actions/workflows/tests.yml"><img src="https://github.com/DChristensen12/PROTON/actions/workflows/tests.yml/badge.svg"></a>
+  <a href="https://github.com/DChristensen12/PROTON"><img src="https://img.shields.io/badge/powered%20by-radioactive%20decay-75BBE7"></a>
+</p>
+  
 </p>
 
 ## What is PROTON?
