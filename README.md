@@ -1,6 +1,10 @@
 # PROTON
 
-**P**hysics-informed **R**adiation **O**perators and **T**ime-series **O**ptimized **N**etworks
+<div align="center">
+  <img src="docs/images/PROTON_STAMP_ON_BACKGROUND.jpeg" width="600"/>
+</div>
+<p align="center"><b>**P**hysics-informed **R**adiation **O**perators and **T**ime-series **O**ptimized **N**etworks</b></p>
+
 
 [![python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/downloads/)[![license](https://img.shields.io/github/license/DChristensen12/PROTON)](https://github.com/DChristensen12/PROTON/blob/main/LICENSE)[![tests](https://github.com/DChristensen12/PROTON/actions/workflows/tests.yml/badge.svg)](https://github.com/DChristensen12/PROTON/actions/workflows/tests.yml)
 
@@ -33,8 +37,8 @@ The spectrometer follows the same check_/record_ pattern; the counts package onl
 
 ## Current State/Updates
 
-07/23/2026:  
+07/26/2026:  
 
-I am currently doing additional research on diffusion models and planning visualization improvements for the existing code. The logo for PROTON is also currently being finalized! 
+I am currently doing additional research on diffusion models and planning visualization improvements for the existing code. The logo for PROTON is finished! I'm putting a temporary background logo on it for this commit, and then I'll either leave it or I'll commit the logo with a different background!
 
 I will be updating this throughout the year! Stay tuned!
