@@ -1,18 +1,20 @@
-# PROTON
-
 <div align="center">
-  <img src="docs/images/PROTON_STAMP_ON_BACKGROUND.jpeg" width="600"/>
+  <img src="docs/images/PROTON_STAMP_ON_BACKGROUND.jpeg" width="300"/>
 </div>
-<p align="center"><b>**P**hysics-informed **R**adiation **O**perators and **T**ime-series **O**ptimized **N**etworks</b></p>
 
+<p align="center">
+  <b>P</b>hysics-informed <b>R</b>adiation <b>O</b>perators and <b>T</b>ime-series <b>O</b>ptimized <b>N</b>etworks
+</p>
 
-[![python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/downloads/)[![license](https://img.shields.io/github/license/DChristensen12/PROTON)](https://github.com/DChristensen12/PROTON/blob/main/LICENSE)[![tests](https://github.com/DChristensen12/PROTON/actions/workflows/tests.yml/badge.svg)](https://github.com/DChristensen12/PROTON/actions/workflows/tests.yml)
-
+<p align="center">
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12%2B-blue"></a>
+  <a href="https://github.com/DChristensen12/PROTON/blob/main/LICENSE"><img src="https://img.shields.io/github/license/DChristensen12/PROTON"></a>
+  <a href="https://github.com/DChristensen12/PROTON/actions/workflows/tests.yml"><img src="https://github.com/DChristensen12/PROTON/actions/workflows/tests.yml/badge.svg"></a>
+</p>
 
 ## What is PROTON?
 
 This is a library for radiation data inference and visualization! Feed it the runs I bundle in or readings you collect yourself, pull real physical quantities out of raw counts and spectra, and turn the whole thing into organized tables and plots you can actually read. 
-
 
 ## Hardware Support
 
