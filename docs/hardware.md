@@ -1,10 +1,10 @@
 # Hardware
 
-PROTON supports the use of hardware for the data aquisition process to feed into PROTON itself. This document specifies how to use hardware with PROTON, providing examples with devices that has built-in support already, and how to use alternative devices with PROTON. The example setup below (wiring, parts list, topology) is the rig I actually built, so copying it should get you running without much guesswork.
+PROTON supports the use of hardware for the data aquisition process to feed into PROTON itself. This document specifies how to use hardware with PROTON, providing examples with devices that has built-in support already, and how to use alternative devices with PROTON. The example setup below (wiring, parts list, topology) is the rig built with direct, built-in support, so copying it should get you running PROTON with hardware fairly easily.
 
 ## General device classes and alternative detectors
 
-If you're using one of the three supported types (a gamma spectrometer, or a geiger counter reading either counts or pulses), you're already covered. For anything else, each package also comes with a General Device Class that takes any read function you give it and treats it the same as the real hardware from there on. `data_handler.py` has what you need to wire in your own device if the built in supports are not sufficent enough to easily modify and extend to your own device.
+If you're using one of the three supported types (a gamma spectrometer, or a geiger counter reading either counts or pulses), then there is already built in classes for them (specifically, you're covered if you use the same devices shown below). For anything else, each package also comes with a General Device Class that takes any read function you give it and treats it the same as the real hardware from there on. `data_handler.py` has what you need to wire in your own device if the built in supports are not sufficent enough to easily modify and extend to your own device.
 
 ## Data acquisition
 
@@ -45,17 +45,17 @@ Parameters:
 - `--name` is the output file name (record scripts).
 - `--dir` is the folder to write into (record scripts).
 - `--port` overrides the serial port on the pulse and counts detectors (`/dev/ttyUSB0` or `/dev/ttyACM0` on Linux, a `COM` name on Windows). The spectrometer does not use `--port`; it takes `--mac` for Bluetooth instead.
-- `--count` sets how many pulses `check_pulses` reads before quitting.
+- `--count` sets how many pulses `check_pulses` reads before stopping.
 - `--tube` tells `check_pulses` which tube is fitted, `j305` or `sbm20`, so it knows the dead time to check against.
 - `--mac` selects Bluetooth on the spectrometer scripts.
 - `--wait` sets the pause between the two reads in `check_spectrometer`.
 
 Every script also takes `--help`, which lists its options and defaults.
 
-What gets collected depends on the detector. The pulse device records one row per detected pulse, with the microsecond gap since the previous pulse. The counts device records a running pulse total and the tube's own rate estimate on a fixed cadence. The spectrometer writes a full energy histogram per snapshot, rewriting the file each interval so the latest snapshot is always the one on disk. In every case the specific and general classes write the same columns, so a replayed run looks the same as a live one downstream.
+What gets collected depends on the detector. The pulse device records one row per detected pulse, with the microsecond gap since the previous pulse. The counts device records a running pulse total and the tube's own rate estimate on a fixed cadence. The spectrometer writes a full energy histogram per snapshot, rewriting the file each interval so the latest snapshot is always the one on disk. In every case the specific and general classes write the same columns.
 
 
-## Example of a Valid Hardware Setup
+## Example of a Validated Hardware Setup
 
 ### The detector stack
  
@@ -84,11 +84,11 @@ What gets collected depends on the detector. The pulse device records one row pe
  
 ### How the data reaches the computer
 
-The GC-01 and the Radiacode are self-contained USB instruments, so each plugs straight into the host, whereas the GGreg20 is a bare sensor with no USB, so it is connected to an ESP32 over jumper wires, and the ESP32 will carry the data the rest of the way.
+The GC-01 and the Radiacode are self-contained USB instruments, so each plugs straight into the host, whereas the GGreg20 is a bare sensor with no USB, so it is connected to an ESP32 over jumper wires, and the ESP32 carries the data the rest of the way.
 
 All together, every USB device plugs into one powered hub and the hub runs a single cable into the laptop. 
 
-It is planned for the project to have three ESP32 nodes in a mesh, spread out and published over WiFi to an MQTT broker instead, so the convergence point moves from the hub to the broker. 
+**It is planned for the project to have three ESP32 nodes in a mesh, spread out and published over WiFi to an MQTT broker instead, so the convergence point moves from the hub to the broker.**
 
 
 ### GGreg20 to ESP32 wiring
@@ -119,14 +119,10 @@ on the falling edge, since the module is active low. That falling edge is one de
 particle.
 
 The power cable ends in a bare JST, so I used a small screw terminal adapter to get it
-onto the breadboard cleanly. Bare stranded wire jammed into a breadboard hole frays and
-gives intermittent contact, which is miserable to debug when the thing you are measuring
-is already random.
+onto the breadboard cleanly. Bare stranded wire jammed into a breadboard hole frays and gives intermittent contact, which is diffuclt to debug when the thing we are measuring is already random.
 
 Cover the tube while recording. The J305 bulb is transparent and responds to light as
-well as radiation, so an uncovered tube picks up spurious counts under room lighting. The
-cover blocks the light without meaningfully attenuating the background radiation, so the
-counts reflect radiation alone. All the bundled recordings were taken with the cover on.
+well as radiation, so an uncovered tube picks up spurious counts under room lighting. The cover blocks the light without meaningfully attenuating the background radiation, so the counts reflect radiation alone. Note that all the bundled recordings were taken with the cover on.
 
 </br>
 <table align="center">
@@ -143,47 +139,31 @@ counts reflect radiation alone. All the bundled recordings were taken with the c
 
 ### Troubleshooting
 
-Real hardware over real operating systems has sharp edges. Here are the ones I hit, per
-detector, so you do not lose an afternoon to them.
+Here are some issues I ran into with the setup and how to fix them.
 
 #### geiger_counts
 
-The GC-01 has to be running Rad Pro firmware for the serial data logging to work. Stock
-firmware does not export the pulse data the same way.
+The GC-01 has to be running Rad Pro firmware for the serial data logging to work. The stock firmware does not export the pulse data the same way.
 
 If the Arduino monitor, a previous run, or anything else still holds the serial port
-open, the recorder cannot open it and the error is not always obvious. Close everything
-touching the port first. On Linux, `fuser /dev/ttyUSB0` tells you what is holding it.
+open, the recorder cannot open it and the error is not always obvious. Close everything touching the port first. On Linux, `fuser /dev/ttyUSB0` tells you what is holding it.
 
 #### geiger_pulses
 
-Duplicate lines after flashing, on Linux. After I flash the ESP32 with arduino-cli, the
-next serial read sometimes floods with the same line repeated thousands of times, far
-faster than the baud rate could actually send it. It is not the sketch. The index
-increments on every print, so a repeated index means the host read a stale buffer. It is
-the CP2102 USB bridge left in a bad state by esptool's reset at the end of the upload. A
-software reset with usb_modeswitch helped for a minute but did not hold. What reliably
-fixes it is physically unplugging the USB cable and plugging it back in before recording.
-So the rule is: after you flash, replug before you record. The monotonicity guard in
-readout.py catches this if it slips through, it raises rather than writing a quarter
-million garbage rows.
+Duplicate lines after flashing, on Linux. After I flash the ESP32 with arduino-cli, the next serial read sometimes floods with the same line repeated thousands of times, far faster than the baud rate could actually send it. It is not the sketch. The index
+increments on every print, so a repeated index means the host read a stale buffer. It is the CP2102 USB bridge left in a bad state by esptool's reset at the end of the upload. A software reset with usb_modeswitch helped for a minute but did not hold. What reliably fixes it is physically unplugging the USB cable and plugging it back in before recording. So the rule is: after you flash, replug before you record. The monotonicity guard in readout.py catches this if it slips through, it raises rather than writing a quarter million unusable rows.
 
 Occasional double counts under the dead time. About 7% of my pulses arrive as a second
 edge roughly 158 microseconds after a real one, below the J305's 180 microsecond dead
 time. The tube cannot fire twice that fast, so these are not particles, they are the
 front end registering one event twice. I do not debounce them in firmware on purpose,
-since that would also eat the short interval tail I want for later modeling. I keep them,
-flag them, and remove them in analysis with deadtime.py. The check_pulses smoke test
-reports how many sub dead time intervals it sees.
+since that would also eat the short interval tail I want for later modeling. I keep them, flag them, and remove them in analysis with deadtime.py. The check_pulses smoke test reports how many sub dead time intervals it sees.
 
-Board resets when the port opens. Opening the serial port toggles DTR and RTS, wired to
-EN and GPIO0, so the ESP32 reboots and dumps bootloader garbage at 74880 baud into the
-stream. readout.py sets dtr and rts false before opening to suppress this. If you write
-your own reader, do the same, and skip any line that does not parse as two numbers.
+Board resets when the port opens. Opening the serial port toggles DTR and RTS, wired to EN and GPIO0, so the ESP32 reboots and dumps bootloader garbage at 74880 baud into the stream. readout.py sets dtr and rts false before opening to suppress this. If you write your own reader, do the same, and skip any line that does not parse as two numbers.
 
 #### gamma_spectrometer
 
-USB permissions on Linux. pyusb cannot open the Radiacode without permission, so a plain user run fails with an access error. The quick confirmation is to run once with sudo. The clean fix is a udev rule, which also keeps your data files from being owned by root. Find your device IDs with lsusb, then:
+USB permissions on Linux. pyusb cannot open the Radiacode without permission, so a plain user run fails with an access error. The quick confirmation is to run once with sudo. The cleanest fix I could find is a udev rule, which also keeps your data files from being owned by root. Find your device IDs with lsusb, then:
 
 ```
 echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="f123", MODE="0660", TAG+="uaccess"' | sudo tee /etc/udev/rules.d/99-radiacode.rules
@@ -191,8 +171,7 @@ sudo udevadm control --reload-rules
 sudo udevadm trigger
 ```
 
-Then unplug the Radiacode and plug it back in so the rule takes effect. Reloading alone
-does not do it, it needs a physical replug.
+Then unplug the Radiacode and plug it back in so the rule takes effect. Reloading alone does not do it, it needs a physical replug.
 
 Bluetooth permissions. bluepy usually needs elevated rights too, so Bluetooth may also
 want sudo or a setcap on the bluepy helper. Get USB working first, then try Bluetooth
@@ -206,4 +185,4 @@ ignore_firmware_check = True for a quick test.
 
 The recordings bundled in `proton/default_data/` are the raw outputs from the instruments. Nothing is filtered or corrected in the stored files. For geiger_pulses that means the sub dead time artifacts are still present in the data, so the raw data stays complete and anyone can audit what the detector actually saw before data cleaning.
 
-The corrections happen later during the data analysis, not in the recording. The dead time handling in `deadtime.py` reads a raw interval series and returns a corrected result without touching the original file, so the same raw recording can be re-corrected later if the dead time value changes. 
+The corrections happen later during the data analysis, not during the recording process (so that we can get the true raw data and make decisions about data cleaning later). The dead time handling in `deadtime.py` reads a raw interval series and returns a corrected result without touching the original file, so the same raw recording can be re-corrected later if the dead time value changes. 

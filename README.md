@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/images/PROTON_STAMP_ON_BACKGROUND.jpeg" width="300"/>
+  <img src="docs/images/PROTON_LOGO_SOLID.png" width="300"/>
 </div>
 
 <p align="center">
