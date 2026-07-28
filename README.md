@@ -1,7 +1,7 @@
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/PROTON_LOGO_SOLID.png">
-    <source media="(prefers-color-scheme: light)" srcset="docs/images/proton_logo_light.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/PROTON_LOGO_SOLID.png">
     <img alt="PROTON logo" src="docs/images/PROTON_LOGO_SOLID.png" width="300">
   </picture>
 </div>
