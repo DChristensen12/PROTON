@@ -1,5 +1,9 @@
 <div align="center">
-  <img src="docs/images/PROTON_LOGO_SOLID.png" width="300"/>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/PROTON_LOGO_SOLID.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/proton_logo_light.png">
+    <img alt="PROTON logo" src="docs/images/PROTON_LOGO_SOLID.png" width="300">
+  </picture>
 </div>
 
 <p align="center">
@@ -42,8 +46,19 @@ The spectrometer follows the same check_/record_ pattern; the counts package onl
 
 ## Current State/Updates
 
-07/26/2026:  
+07/28/2026:  
 
-I am currently doing additional research on diffusion models and planning visualization improvements for the existing code. The logo for PROTON is finished! I'm putting a temporary background logo on it for this commit, and then I'll either leave it or I'll commit the logo with a different background!
+I am currently doing additional research on diffusion models and planning visualization improvements for the existing code. I plan to create and upload some of the initial files for it within the next 3 days.
+
+ The logo for PROTON is finished! Making some edits for a light and dark mode verision!
 
 I will be updating this throughout the year! Stay tuned!
+
+<br>
+<div align="right">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/PROTON_LOGO_STAMP.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/PROTON_LOGO_STAMP.png">
+    <img alt="PROTON" src="docs/images/PROTON_LOGO_STAMP" width="60">
+  </picture>
+</div>
