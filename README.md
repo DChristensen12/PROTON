@@ -46,11 +46,9 @@ The spectrometer follows the same check_/record_ pattern; the counts package onl
 
 ## Current State/Updates
 
-07/28/2026:  
+08/02/2026:  
 
-I am currently doing additional research on diffusion models and planning visualization improvements for the existing code. I plan to create and upload some of the initial files for it within the next 3 days.
-
- The logo for PROTON is finished! Making some edits for a light and dark mode verision!
+I am currently researching and considering how I'd like to implement the Diffusion Models and Fourier Neural Operators! I will also be updating the visualizations too. 
 
 I will be updating this throughout the year! Stay tuned!
 
