@@ -133,6 +133,19 @@ GREEN_HILL = Palette(
     cmap = ("#124F00", "#2BB800", "#FFD78F", "#0F81D8")
 )
 
+PARALYZER = Palette(
+    name = "paralyzer",
+    primary = "#758CE7",
+    cycle = ("#758CE7", "#E79775", "#C5E775", "#D075E7", "#75E7D0", "#E775A8"),   # 228 deg indigo off the arc glow, same rotations as proton
+    cmap = "paralyzer"
+)
+
+PETRIFIER = Palette(
+    name = "petrifier",
+    primary = "#75E788",
+    cycle = ("#75E788", "#C175E7", "#E7759B", "#75D4E7", "#D4E775", "#757EE7"),   # 130 deg green sampled off the barrel housing
+    cmap = "petrifier"
+)
 
 PALETTES = {p.name: p for p in (PROTON, SOFT_SERENITY, SOFT_SERENITY_WIDE, FORMAL, OKABE_ITO, TOL_BRIGHT, TOL_MUTED, BEACON, COMPASS, MERIDIAN, HALO_LIGHT, HALO_DARK, OGRE, INVINCIBLE, GREEN_HILL)}
  
