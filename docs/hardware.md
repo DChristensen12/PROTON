@@ -4,16 +4,16 @@ PROTON supports the use of hardware for the data aquisition process to feed into
 
 ## General device classes and alternative detectors
 
-If you're using one of the three supported types (a gamma spectrometer, or a geiger counter reading either counts or pulses), then there is already built in classes for them (specifically, you're covered if you use the same devices shown below). For anything else, each package also comes with a General Device Class that takes any read function you give it and treats it the same as the real hardware from there on. `data_handler.py` has what you need to wire in your own device if the built in supports are not sufficent enough to easily modify and extend to your own device.
+If you're using one of the three supported types (a gamma spectrometer, or a geiger counter reading either counts or pulses), then there is already built in classes for them (specifically, you are completely covered in the hardware setup if you use the same devices shown below). For anything else, each package also comes with a General Device Class that takes any read function you give it and treats it the same as the real hardware from there on. `data_handler.py` has what you need to wire in your own device if the built in supports are not sufficent enough to easily modify and extend to your own device.
 
 ## Data acquisition
 
-Every detector records the same way: a `record_` script writes a run to a csv. The pulse detector also has a `check_` script that reads a few samples first so you can confirm the device is alive, and the spectrometer has one for checking the connection.
+Every detector records data in the same way: a `record_` script writes a run to a csv. The pulse detector also has a `check_` script that reads a few samples first so you can confirm the device is live, and the spectrometer has one for checking if it is connected.
 
 Pulse detector (geiger_pulses):
 
 ```
-# read a handful of pulses to confirm the wiring works
+# read a handful of pulses to confirm that the wiring works
 python -m proton.Hardware.Detectors.geiger_pulses.check_pulses --count 20
 
 # record a run to a csv
@@ -41,12 +41,12 @@ python -m proton.Hardware.Detectors.gamma_spectrometer.record_spectrum --duratio
 
 Parameters:
 
-- `--duration` is how many seconds to record (record scripts, default 3600).
-- `--name` is the output file name (record scripts).
-- `--dir` is the folder to write into (record scripts).
+- `--duration` is how many seconds to record for (record scripts, default 3600).
+- `--name` is what the output file name will be saved as (record scripts).
+- `--dir` specifies the folder to write into (record scripts).
 - `--port` overrides the serial port on the pulse and counts detectors (`/dev/ttyUSB0` or `/dev/ttyACM0` on Linux, a `COM` name on Windows). The spectrometer does not use `--port`; it takes `--mac` for Bluetooth instead.
-- `--count` sets how many pulses `check_pulses` reads before stopping.
-- `--tube` tells `check_pulses` which tube is fitted, `j305` or `sbm20`, so it knows the dead time to check against.
+- `--count` sets how many pulses `check_pulses` will read before stopping.
+- `--tube` specifies to `check_pulses` which tube is fitted, `j305` or `sbm20`, so that the dead time is checked against.
 - `--mac` selects Bluetooth on the spectrometer scripts.
 - `--wait` sets the pause between the two reads in `check_spectrometer`.
 
@@ -88,7 +88,7 @@ The GC-01 and the Radiacode are self-contained USB instruments, so each plugs st
 
 All together, every USB device plugs into one powered hub and the hub runs a single cable into the laptop. 
 
-**It is planned for the project to have three ESP32 nodes in a mesh, spread out and published over WiFi to an MQTT broker instead, so the convergence point moves from the hub to the broker.**
+**It is planned for the project to have a supported sensor fusion setup with three ESP32 nodes in a mesh, spread out and published over WiFi to an MQTT broker instead, so the convergence point moves from the hub to the broker.**
 
 
 ### GGreg20 to ESP32 wiring
@@ -112,7 +112,7 @@ downstream reads only these:
 
 Power the module from VIN, not 3V3. The module boosts to about 400V for the tube and
 needs the 5V headroom to do it. The OUT line still idles at 3.3V because the module pulls
-it up on its own, so D4 never sees more than 3.3V.
+it up on its own, so D4 never gets more than 3.3V.
 
 In the firmware, D4 is a plain INPUT with no internal pullup, and the interrupt fires
 on the falling edge, since the module is active low. That falling edge is one detected
@@ -122,7 +122,7 @@ The power cable ends in a bare JST, so I used a small screw terminal adapter to 
 onto the breadboard cleanly. Bare stranded wire jammed into a breadboard hole frays and gives intermittent contact, which is diffuclt to debug when the thing we are measuring is already random.
 
 Cover the tube while recording. The J305 bulb is transparent and responds to light as
-well as radiation, so an uncovered tube picks up spurious counts under room lighting. The cover blocks the light without meaningfully attenuating the background radiation, so the counts reflect radiation alone. Note that all the bundled recordings were taken with the cover on.
+well as radiation, so an uncovered tube picks up spurious counts under room lighting. The cover blocks the light without meaningfully attenuating the background radiation, so the counts reflect radiation alone. *Note that all the bundled recordings were taken with the cover on*.
 
 </br>
 <table align="center">
@@ -157,9 +157,9 @@ Occasional double counts under the dead time. About 7% of my pulses arrive as a 
 edge roughly 158 microseconds after a real one, below the J305's 180 microsecond dead
 time. The tube cannot fire twice that fast, so these are not particles, they are the
 front end registering one event twice. I do not debounce them in firmware on purpose,
-since that would also eat the short interval tail I want for later modeling. I keep them, flag them, and remove them in analysis with deadtime.py. The check_pulses smoke test reports how many sub dead time intervals it sees.
+since that would also eat the short interval tail we want for later modeling. We will keep them, flag them, and remove them in analysis with deadtime.py. The check_pulses test reports how many sub dead time intervals are present.
 
-Board resets when the port opens. Opening the serial port toggles DTR and RTS, wired to EN and GPIO0, so the ESP32 reboots and dumps bootloader garbage at 74880 baud into the stream. readout.py sets dtr and rts false before opening to suppress this. If you write your own reader, do the same, and skip any line that does not parse as two numbers.
+The board resets when the port opens. Opening the serial port toggles DTR and RTS, wired to EN and GPIO0, so the ESP32 reboots and dumps bootloader garbage at 74880 baud into the stream. readout.py sets dtr and rts false before opening to suppress this. If you write your own reader, do the same, and skip any line that does not parse as two numbers.
 
 #### gamma_spectrometer
 
@@ -174,7 +174,7 @@ sudo udevadm trigger
 Then unplug the Radiacode and plug it back in so the rule takes effect. Reloading alone does not do it, it needs a physical replug.
 
 Bluetooth permissions. bluepy usually needs elevated rights too, so Bluetooth may also
-want sudo or a setcap on the bluepy helper. Get USB working first, then try Bluetooth
+require sudo or a setcap on the bluepy helper. Get USB working first, then try Bluetooth
 with `--mac`. For long runs I use the wired link anyway, it is steadier over hours.
 
 Firmware version. The radiacode library needs firmware 4.8 or newer and the constructor
