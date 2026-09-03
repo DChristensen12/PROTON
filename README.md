@@ -46,9 +46,10 @@ The spectrometer follows the same check_/record_ pattern; the counts package onl
 
 ## Current State/Updates
 
-08/16/2026:  
+09/03/2026:  
 
-I am considering implementations, improvements, and decorative aspects of PROTON. Namely, I plan to improve the visualizations, add in a diffusion model, and make use of fourier neural operators while applying these ideas to draw insights.
+I am going to move forward with simple visualizations, then work on the special versions of them after the fourier neural operators and diffusion models are implemented. 
+I have been busy balancing work and this project, so updates will likely be more sparse for a little while.
 
 I will be updating this throughout the year! Stay tuned!
 
