@@ -46,10 +46,10 @@ The spectrometer follows the same check_/record_ pattern; the counts package onl
 
 ## Current State/Updates
 
-09/03/2026:  
+09/30/2026:  
 
-I am going to move forward with simple visualizations, then work on the special versions of them after the fourier neural operators and diffusion models are implemented. 
 I have been busy balancing work and this project, so updates will likely be more sparse for a little while.
+Currently, I am working on the FNO implementation. I realized that the anima AI group already has a very nice library for FNO, so I'll use it instead of reinventing the wheel. PROTON itself is still distinctly different even with the use of their FNOs.
 
 I will be updating this throughout the year! Stay tuned!
 
