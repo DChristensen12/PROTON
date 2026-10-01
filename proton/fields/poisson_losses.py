@@ -12,13 +12,27 @@ LOSSES = {
 }
 
 def poisson_deviance(counts, log_rate, live_time, reduction = "sum"):
-    """"TODO"""
-    return 2
+    """"
+    Poisson deviance. Zero for a perfect fit and roughly chi squared, so per dof it will read like chi2 per dof
+    """
+    counts, log_rate, live_time = _prepare(counts, log_rate, live_time)
+    mu = live_time * np.exp(np.clip(log_rate, -_LOG_RATE_CLIP, _LOG_RATE_CLIP))
+    positive = counts > 0.0
+    safe_ratio = np.where(positive, counts / np.where(positive, mu, 1.0), 1.0)
+    term = np.where(positive, counts * np.log(safe_ratio), 0.0)
+    return _reduce(2.0 * (term - (counts - mu)), reduction)
 
 def deviance_per_dof(counts, log_rate, live_time, n_parameters = 0):
     "Deviance divided by residual degrees of freedom. It reads like a reduced chi squared."
-    # TDO
-    return 2
+    counts = np.asarray(counts, dtype=float)
+    dof = counts.size - int(n_parameters)
+    if dof <= 0:
+        raise ValueError(
+            f"{counts.size} observations and {n_parameters} parameters leaves no degrees of "
+            "freedom, so this ratio has nothing to say"
+        )
+    return float(poisson_deviance(counts, log_rate, live_time, reduction="sum") / dof)
+
 
 def weighted_log_12(counts, log_rate, live_time, offset = 0.5, reduction = "mean"):
     """
@@ -41,8 +55,13 @@ def weighted_log_12(counts, log_rate, live_time, offset = 0.5, reduction = "mean
     return _reduce(value, reduction)
 
 def anscombe_mse(counts, log_rate, live_time, reduction = "mean"):
-    """TODO"""
-    return 2
+    """The squared error after applying the Anscombe transform to counts and prediction.
+    It is close to unit variance above about 4 counts, distorted below that."""
+    counts, log_rate, live_time = _prepare(counts, log_rate, live_time)
+    mu = live_time * np.exp(np.clip(log_rate, -_LOG_RATE_CLIP, _LOG_RATE_CLIP))
+    residual = 2.0 * np.sqrt(counts + 0.375) - 2.0 * np.sqrt(mu + 0.375)
+    return _reduce(residual**2, reduction)
+
 
 def make_loss(name):
     "This looks up a loss by name, for configuration files and CLI flags"
@@ -59,8 +78,30 @@ def poisson_nll(counts, log_rate, live_time, include_constant = False, reduction
 
     include_constant = True will give the full value and requires scipy.
     """
-    #counts, log_rate, live_time = TODO
+    counts, log_rate, live_time = _prepare(counts, log_rate, live_time)
+    mu = live_time * np.exp(np.clip(log_rate, -_LOG_RATE_CLIP, _LOG_RATE_CLIP))
+    value = mu - counts *log_rate
+    if include_constant:
+        from scipy.special import gammaln
+        value = value - counts * np.log(live_time) + gammaln(counts + 1.0)
+    return _reduce(value, reduction)
 
+def poisson_nll_grad(counts, log_rate, live_time):
+    """Gradient of the reduced NLL, T * exp(eta) - N. Predicted minus observed counts."""
+    counts, log_rate, live_time = _prepare(counts, log_rate, live_time)
+    return live_time * np.exp(np.clip(log_rate, -_LOG_RATE_CLIP, _LOG_RATE_CLIP)) - counts
+
+def torch_poisson_nll(include_constant=False):
+    """Returns the reduced Poisson NLL built from torch ops, for autograd training."""
+    import torch
+    def loss(counts, log_rate, live_time):
+        """Reduced Poisson NLL, mean over elements."""
+        clipped = torch.clamp(log_rate, -_LOG_RATE_CLIP, _LOG_RATE_CLIP)
+        value = live_time * torch.exp(clipped) - counts * log_rate
+        if include_constant:
+            value = value - counts * torch.log(live_time) + torch.lgamma(counts + 1.0)
+        return value.mean()
+    return loss
 
 def _prepare(counts, log_rate, live_time):
     "Coerce ti float arrays, broadcasts live time, and rejects inputs"
